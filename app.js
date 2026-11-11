@@ -287,8 +287,8 @@ function libSheet(id) {
    ECRÃ: COMER
    ========================================================= */
 const KETO_NOTES = [
-  ['Evita', 'funge, arroz, pão, massa, batata, batata-doce, mandioca, banana-pão, feijão, milho, abóbora, açúcar, mel, sumos, refrigerantes e cerveja.'],
-  ['Podes à vontade', 'ovos, frango, carne de vaca, fígado, atum e sardinha em lata, gimboa, couve, quiabo, repolho, beringela, pepino, alface, abacate e jindungo.'],
+  ['Evita', 'arroz, pão, massa, batata, batata-doce, mandioca, feijão, milho, abóbora, fruta doce, açúcar, mel, sumos, refrigerantes e cerveja.'],
+  ['Podes à vontade', 'ovos, frango, carne de vaca, atum e sardinha em lata, couve, repolho, beringela, pepino, alface e abacate.'],
   ['Com moderação', 'tomate, cebola, ginguba, iogurte natural e queijo.'],
   ['Em jejum', 'água, chá e café sem açúcar.'],
   ['Gripe keto', 'nas primeiras 1–2 semanas pode haver cansaço e dor de cabeça. Põe sal na comida, bebe caldo e come abacate e folhas verdes.'],
