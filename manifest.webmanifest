@@ -1,13 +1,13 @@
 {
- "name": "Treino da Beatriz",
- "short_name": "Treino",
+ "name": "Push It",
+ "short_name": "Push It",
  "description": "Treino, keto, água e progresso — amigo da coluna e offline.",
  "lang": "pt",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
  "orientation": "portrait",
- "background_color": "#FAF6F7",
+ "background_color": "#F5E3E8",
  "theme_color": "#FAF6F7",
  "icons": [
   {
