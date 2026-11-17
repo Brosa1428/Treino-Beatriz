@@ -102,8 +102,8 @@ h3{margin:0;font-size:16px;font-weight:700}
 .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--lil));border-radius:99px;transition:width .4s}
 /* formulários */
 label.f{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin:10px 0 5px}
-input.in,select.in{width:100%;border:1px solid var(--line);background:var(--sf2);border-radius:13px;padding:12px 13px;font-size:15px;outline:none}
-input.in:focus,select.in:focus{border-color:var(--ac);background:#fff}
+input.in,select.in,textarea.in{width:100%;border:1px solid var(--line);background:var(--sf2);border-radius:13px;padding:12px 13px;font-size:15px;outline:none}
+input.in:focus,select.in:focus,textarea.in:focus{border-color:var(--ac);background:#fff}
 .sw{position:relative;width:48px;height:28px;flex:none}
 .sw input{opacity:0;width:0;height:0;position:absolute}
 .sw span{position:absolute;inset:0;background:#DCCBD5;border-radius:99px;transition:.2s}
@@ -222,6 +222,43 @@ table.hist td{text-align:center;padding:8px 2px;border-top:1px solid var(--line)
 .pl-done .st{display:flex;justify-content:center;gap:26px}
 .pl-done .st b{display:block;font-size:30px}
 .pl-done .st small{opacity:.7}
+
+.opt{display:flex;gap:6px;flex-wrap:wrap}
+.opt button{flex:1;border:1px solid var(--line);background:var(--sf);border-radius:12px;padding:10px 6px;font-weight:700;font-size:12.5px;white-space:nowrap;color:var(--ink2)}
+.opt button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.rings{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.rings>div>div{margin:0 auto}
+.rings small{display:block;font-size:11.5px;color:var(--ink2);font-weight:600;margin-top:6px}
+.rings b{font-size:13px}
+.bdg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bd1{background:var(--sf);border:1px solid var(--line);border-radius:18px;padding:14px 6px 12px;text-align:center}
+.bd1 .em{font-size:32px;line-height:1.1;filter:grayscale(1);opacity:.3}
+.bd1.on{border-color:var(--ac);background:var(--ac2)}.bd1.on .em{filter:none;opacity:1}
+.bd1 b{display:block;font-size:12.5px;margin-top:6px;line-height:1.2}
+.bd1 small{display:block;font-size:11px;color:var(--ink2);margin-top:2px}
+.mcal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.mcal .hd{font-size:11px;font-weight:700;color:var(--mut);text-align:center;padding-bottom:2px}
+.mc{aspect-ratio:1;border-radius:12px;border:1px solid var(--line);background:var(--sf);font-size:12.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink2);padding:0}
+.mc.tr{background:var(--mint);border-color:var(--mint);color:#fff}
+.mc.pl{background:var(--lil2);border-color:var(--lil2);color:var(--lil)}
+.mc.td{outline:2px solid var(--ink);outline-offset:1px}
+.mc.fu{opacity:.45}
+.mc .dots{display:flex;gap:2px;height:5px}.mc .dots i{width:5px;height:5px;border-radius:50%}
+.mb{display:flex;align-items:center;gap:10px;font-size:13px;margin:9px 0}
+.mb span{width:118px;flex:none;font-weight:600}.mb .bar{flex:1}.mb b{width:62px;text-align:right;font-size:12px;color:var(--ink2);font-weight:700}
+.phg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.phg button{padding:0;border:0;border-radius:14px;overflow:hidden;position:relative;aspect-ratio:3/4;background:var(--sf2)}
+.phg img,.cmp img{width:100%;height:100%;object-fit:cover;display:block}
+.phg span,.cmp span{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.55);color:#fff;font-size:10.5px;font-weight:700;border-radius:8px;padding:2px 7px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cmp div{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:var(--sf2)}
+.qty{display:flex;align-items:center;gap:6px;flex:none}
+.qty button{width:30px;height:30px;border-radius:10px;border:0;background:var(--sf2);display:grid;place-items:center}
+.qty b{min-width:26px;text-align:center;font-size:13px}
+.act2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.act2 button{border:0;border-radius:20px;padding:16px 14px;text-align:left;color:#fff;font-weight:800;font-size:15px;min-height:92px;display:flex;flex-direction:column;justify-content:space-between}
+.act2 button small{font-weight:600;font-size:12px;opacity:.85;display:block}
+.pl-clock .n.sm{font-size:52px}
+.pl-lbl{font-size:44px;font-weight:800;text-align:center;margin:26px 0 0}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.media .b{opacity:0}}
 </style>
 </head>
@@ -239,6 +276,7 @@ table.hist td{text-align:center;padding:8px 2px;border-top:1px solid var(--line)
 <div class="player" id="player"></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
+<input type="file" id="photoFile" accept="image/*" hidden>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>
