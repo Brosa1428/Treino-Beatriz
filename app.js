@@ -59,6 +59,7 @@ const P = {
   sound: 'M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11',
   mute: 'M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM16 9.5l5 5M21 9.5l-5 5',
   homeIc: 'M4 11 12 4l8 7M6.5 9.5V20h11V9.5',
+  scale2: 'M4 20h16',
   medal: 'M12 14.5a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM9 13.5 7.5 21l4.5-2.5 4.5 2.5L15 13.5',
   cal: 'M5 6h14v14H5zM5 10h14M9 3.5v4M15 3.5v4',
   cam: 'M4 8h3l1.5-2.5h7L17 8h3v11H4zM12 16.5a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z',
@@ -77,7 +78,7 @@ const src = (id, k) => (typeof IMG !== 'undefined' ? 'data:image/jpeg;base64,' +
 
 /* ---------- estado ---------- */
 const KEY = 'treinoBeatriz.app.v2';
-let S = { perfil: {}, checks: {}, cardio: {}, ing: {}, pl: {}, med: [], water: {}, meals: {}, doce: {}, chal: null, ph: 0, day: 0, swaps: {}, extra: {}, log: {}, view: 'anim', start: null, shop: {}, next: null, loads: {}, work: {}, sess: {}, restSec: 0, mute: false, free: { n: '', ids: [], tip: '' }, ck: {}, food: {}, fast: { goal: 17, st: null, t: 0, log: [] }, badges: null, phN: 0, v: 0, steps: {}, notes: {} };
+let S = { perfil: {}, checks: {}, cardio: {}, ing: {}, pl: {}, med: [], water: {}, meals: {}, doce: {}, chal: null, ph: 0, day: 0, swaps: {}, extra: {}, log: {}, view: 'anim', start: null, shop: {}, next: null, loads: {}, work: {}, sess: {}, restSec: 0, mute: false, free: { n: '', ids: [], tip: '' }, ck: {}, food: {}, fast: { goal: 17, st: null, t: 0, log: [] }, badges: null, phN: 0, v: 0, steps: {}, notes: {}, theme: 'auto', accent: 'rosa', learn: {}, cyc: { on: false, starts: [], per: 5 }, lvl: null };
 try { S = Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { }
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Não consegui guardar no telemóvel.'); } };
 if (!S.start) { S.start = today(); }
@@ -85,13 +86,15 @@ if (!PLANS[S.ph]) S.ph = 0;
 if (!(S.day >= 0 && S.day < 5)) S.day = 0;
 if (!S.free || !Array.isArray(S.free.ids)) S.free = { n: '', ids: [], tip: '' };
 if (!S.fast || !Array.isArray(S.fast.log)) S.fast = { goal: 17, st: null, t: 0, log: [] };
+if (!S.cyc || !Array.isArray(S.cyc.starts)) S.cyc = { on: false, starts: [], per: 5 };
+if (!S.learn) S.learn = {};
 if ((S.v || 0) < 4) { Object.keys(S.ing || {}).forEach(d => { const m = S.meals[d] || {}; if (m[0] || m[1]) delete S.ing[d]; }); S.v = 4; }
 if (S.next && S.next.from < today()) { S.day = S.next.d; S.next = null; }
 Object.keys(S.work || {}).forEach(k => { if (!k.endsWith('_' + today())) delete S.work[k]; });
 save();
 
 let tab = 'hoje';
-const UI = { treino: 'plano', comer: 'diario', prog: 'resumo', xt: 'all', xp: 'all', lt: 'all', hm: today().slice(0, 7), gen: { place: 'gin', focus: 'full', min: 30, ids: [] }, tm: { w: 20, r: 10, n: 8 }, mais: 'menu', kd: (new Date().getDay() + 6) % 7, lg: 'all', lq: '', llv: 9, gm: 'p', gr: 0, cdate: today() };
+const UI = { treino: 'plano', comer: 'diario', prog: 'resumo', xt: 'all', xp: 'all', lt: 'all', hm: today().slice(0, 7), gen: { place: 'gin', focus: 'full', min: 30, ids: [] }, tm: { w: 20, r: 10, n: 8 }, mais: 'menu', kd: (new Date().getDay() + 6) % 7, lg: 'all', lq: '', llv: 9, gm: 'p', gr: 0, cdate: today(), mod: null, qz: null };
 
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2200); }
 
@@ -111,6 +114,7 @@ const kcalTarget = () => { const c = calc(); return c.ok ? Math.max(c.tdee - 500
 
 /* ---------- treino: dados ---------- */
 const GN = { pernas: 'Pernas', glut: 'Glúteos & posterior', costas: 'Costas', peito: 'Peito', ombros: 'Ombros', bracos: 'Braços', core: 'Core', corpo: 'Peso do corpo', cardio: 'Cardio', mob: 'Mobilidade' };
+const DC = ['ac', 'sky', 'mint', 'lil', 'pch'];
 const PH_NAMES = ['Fase 1 · Adaptação', 'Fase 2 · Progressão', 'Fase 3 · Desafio'];
 const PH_INFO = ['Semanas 1–4. Aprender as máquinas com cargas leves, 2–3 séries e 60–90 s de descanso.', 'Semanas 5–8. Entram halteres e polias, mais carga, 3 séries.', 'Semanas 9–12. Uma perna de cada vez, mais carga e 45–60 s de descanso.'];
 let DAYS = [];
@@ -199,54 +203,6 @@ const TIPS = [
   'Leva a marmita para o plantão: é aí que a dieta costuma escorregar.',
   'Se uma máquina estiver ocupada, toca em “Trocar”: há sempre alternativa para o mesmo músculo.',
 ];
-function weekStrip() {
-  const t = today(), mon = monOf(t), L = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
-  let n = 0, k = 0; for (let i = 0; i < 7; i++) { const d = addD(mon, i); if (workoutPct(d) >= 0.8) n++; k += kcalDate(d); }
-  return `<div class="sec" style="margin-top:0"><span>Esta semana</span><span style="text-transform:none;letter-spacing:0;font-weight:700">${n}/4 treinos${k ? ' · ' + f0(k) + ' kcal' : ''}</span></div><div class="week">${L.map((l, i) => { const d = addD(mon, i), dn = workoutPct(d) >= 0.8, pl = S.pl[d] === '1'; return `<div class="wd ${dn ? 'done' : pl ? 'rest' : ''} ${d === t ? 'today' : ''} ${d > t ? 'fut' : ''}">${l}<i>${dn ? ic('check', 16, 3) : pl ? ic('moon', 14, 2.4) : +d.slice(8)}</i></div>`; }).join('')}</div>`;
-}
-function renderHoje() {
-  const t = today(), d = new Date(), c = calc();
-  const tt = dayTotals(), dd = DAYS[S.day], pl = S.pl[t] === '1';
-  const done = (S.log[t] ? S.log[t].pct : 0) >= 0.8, started = tt.n > 0;
-  const ups = dd.ids.filter(id => { const sg = suggest(id); return sg && sg.dir === 'up'; }).length;
-  const sToday = sessOf(t);
-  const wg = waterGoal(t), wc = S.water[t] || 0;
-  const tg = kcalTarget(), ate = dayEat(t).k;
-  const kd = (d.getDay() + 6) % 7, meal = KETO[kd], mdone = S.meals[t] || {};
-  const doce = S.doce[t] != null ? DOCES[S.doce[t]] : null;
-  const lastW = [...S.med].filter(e => e.p).sort((a, b) => a.d < b.d ? -1 : 1);
-  const lw = lastW[lastW.length - 1], fw = lastW[0];
-  let chalTile;
-  if (S.chal) { const st = chalStats(); chalTile = `<small>${esc(S.chal.name)}</small><b>${st.cur}</b><span class="u">dias seguidos</span><span class="s">melhor: ${st.best} · ${st.ok + st.rest}/${S.chal.days}</span>`; }
-  else chalTile = `<small>Desafio</small><b style="font-size:17px">Criar desafio</b><span class="s">dias seguidos, ao teu ritmo</span>`;
-  let heroBody;
-  if (pl) heroBody = `<div class="lbl">Hoje é plantão</div><h2>Descansa e hidrata-te</h2><div class="meta">Sem treino hoje nem amanhã. A meta de água subiu 0,5 L.</div><button class="btn" data-act="go" data-tab="comer" data-sub="diario">${ic('drop', 18)} Registar água</button>`;
-  else heroBody = `<div class="lbl">${done ? 'Treino feito' : 'Treino de hoje'} · ${PH_NAMES[S.ph].split(' · ')[0]}</div>
-    <h2>${dd.free ? '' : 'Dia ' + (S.day + 1) + ' · '}${dd.t}</h2>
-    <div class="meta">${tt.t} exercícios · ~${f0(tt.mAll + tt.t * 3)} min${tt.k ? ' · ' + f0(tt.k) + ' kcal gastas' : ''}${ups ? '<br>' + ups + (ups > 1 ? ' cargas' : ' carga') + ' para subir hoje ↑' : ''}</div>
-    <div class="ringwrap">${ring(tt.n / tt.t, 70, 7, '#fff', 'rgba(255,255,255,.22)', `<span style="color:#fff">${tt.n}/${tt.t}</span>`)}</div>
-    <button class="btn" data-act="go" data-tab="treino">${ic(done ? 'check' : 'play', 18)} ${done ? 'Ver o treino' : started ? 'Continuar treino' : 'Começar treino'}</button>`;
-  $('s-hoje').innerHTML = head(WD[d.getDay()] + ', ' + d.getDate() + ' de ' + MO[d.getMonth()], 'Olá' + (S.perfil.nome ? ', ' + esc(S.perfil.nome) : '') + ' ✨') +
-    (!c.ok ? `<div class="card" style="border-color:var(--ac)"><h3>Vamos começar</h3><p class="note" style="margin:6px 0 12px">Preenche o teu peso, altura e idade para eu calcular as calorias, a água e o gasto dos treinos.</p><button class="btn w" data-act="profile">${ic('user', 18)} Preencher perfil</button></div>` : '') +
-    (deferredInstall && !isStandalone() ? `<div class="card flat" style="display:flex;gap:12px;align-items:center"><div class="ic" style="width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--lil2);color:var(--lil)">${ic('phone')}</div><div style="flex:1"><b>Instala a app</b><div class="note">Fica no ecrã principal e funciona sem internet.</div></div><button class="btn sm lil" data-act="install">Instalar</button></div>` : '') +
-    weekStrip() + checkinHtml() + `<div class="hero">${heroBody}</div>
-    <button class="card flat" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left" data-act="go" data-tab="treino" data-sub="exp"><div class="ic" style="width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--amb2);color:var(--amb);flex:none">${ic('timer')}</div><div style="flex:1"><b>${sToday.length ? 'Sessão guiada feita ✓' : 'Apetece-te outra coisa hoje?'}</b><div class="note">${sToday.length ? sToday.map(e => e.n || (SESS.find(x => x.id === e.id) || {}).n).join(', ') + ' · ' + f0(sToday.reduce((a, e) => a + e.k, 0)) + ' kcal' : 'Explora treinos guiados, cria um à medida ou usa o temporizador.'}</div></div><span class="chev" style="color:var(--mut)">${ic('chev', 18)}</span></button>
-    <div class="grid2">
-      <button class="card kpi" style="text-align:left" data-act="water" data-ml="250"><div style="display:flex;justify-content:space-between;align-items:flex-start"><small>Água</small>${ring(wc / wg, 40, 5, '#4C93E8')}</div><b>${fL(wc)}</b><span class="u">/ ${fL(wg)} L</span><span class="s">toca para +250 ml</span></button>
-      <button class="card kpi" style="text-align:left" data-act="go" data-tab="comer" data-sub="diario"><small>Calorias de hoje</small><b>${ate ? f0(ate) : '—'}</b><span class="u">${ate ? 'kcal comidas' : ''}</span><span class="s">${tg ? 'meta: ' + f0(tg) + ' kcal' : 'preenche o perfil'}</span></button>
-      <button class="card kpi" style="text-align:left" data-act="go" data-tab="mais" data-sub="desafio">${chalTile}</button>
-      <button class="card kpi" style="text-align:left" data-act="go" data-tab="prog" data-sub="medidas"><small>Peso</small><b>${lw ? f1(lw.p) : (c.w ? f1(c.w) : '—')}</b><span class="u">kg</span><span class="s">${lw && fw && lw !== fw ? (lw.p - fw.p > 0 ? '+' : '') + f1(lw.p - fw.p) + ' kg desde ' + dm(fw.d) : 'regista as medidas'}</span></button>
-    </div>
-    <div class="sec"><span>Refeições de hoje${fastLbl() ? ' <span style="text-transform:none;letter-spacing:0;font-weight:700;color:var(--lil)">· ' + fastLbl() + '</span>' : ''}</span> <button class="link" data-act="go" data-tab="comer" data-sub="plano">Ver plano</button></div>
-    <div class="card list">
-      ${meal.m.map((m, i) => `<div class="row ${mdone[i] ? 'done' : ''}"><div class="ic">${ic('food', 18)}</div><div class="tx"><b>${esc(m.t)}</b><small>${m.h} · ${f0(tot(m.it).k)} kcal</small></div><button class="ck ${mdone[i] ? 'on' : ''}" data-act="meal" data-i="${i}" aria-label="Feita">${ic('check', 18, 3)}</button></div>`).join('')}
-      <button class="row" data-act="go" data-tab="comer" data-sub="doces"><div class="ic" style="background:var(--amb2);color:var(--amb)">${ic('cake', 18)}</div><div class="tx"><b>${doce ? esc(doce.n) : 'Um doce keto?'}</b><small>${doce ? f0(tot(doce.it).k) + ' kcal · registado hoje' : '6 receitas para o teu sweet tooth'}</small></div><span class="chev">${ic('chev', 18)}</span></button>
-    </div>
-    <div class="card" style="display:flex;align-items:center;gap:12px"><div class="ic" style="width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--lil2);color:var(--lil)">${ic('moon', 18)}</div><div style="flex:1"><b>Hoje estou de plantão</b><div class="note">Pausa o treino, +0,5 L de água e conta como descanso no desafio.</div></div><label class="sw"><input type="checkbox" data-act="plantao" ${pl ? 'checked' : ''}><span></span></label></div>
-    <button class="card flat" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left" data-act="go" data-tab="mais" data-sub="conq"><div class="ic" style="width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--ac2);color:var(--acd);flex:none">${ic('medal', 18)}</div><div style="flex:1"><b>Conquistas: ${Object.keys(S.badges || {}).length} de ${BADGES.length}</b><div class="note">${nextBadge()}</div></div><span class="chev" style="color:var(--mut)">${ic('chev', 18)}</span></button>
-    <div class="call lil">${ic('spark', 18)}<div><b>Dica do dia.</b> ${TIPS[diffD('2026-01-01', t) % TIPS.length]}</div></div>`;
-}
-
 /* =========================================================
    ECRÃ: TREINO
    ========================================================= */
@@ -264,8 +220,8 @@ function renderTreino() {
     const shown = DAYS.map((x, i) => [x, i]).filter(([x]) => !x.free || x.ids.length);
     body = `<div class="seg">${PH_NAMES.map((n, i) => `<button class="${i === S.ph ? 'on' : ''}" data-act="phase" data-i="${i}">${n.split(' · ')[0]}</button>`).join('')}</div>
      <p class="note" style="margin:-4px 2px 14px">${PH_INFO[S.ph]}${sug !== S.ph ? ` <b style="color:var(--acd)">Sugestão para a semana ${weekNo()}: ${PH_NAMES[sug].split(' · ')[0]}.</b>` : ''}</p>
-     <div class="days" style="grid-template-columns:repeat(${shown.length},1fr)">${shown.map(([x, i]) => { const t2 = dayTotals(i); return `<button class="day ${i === S.day ? 'on' : ''}" data-act="day" data-i="${i}"><b>${x.free ? 'Livre' : 'Dia ' + (i + 1)}</b><small>${x.free ? 'à medida' : x.t.split(/[ ,]/)[0]}</small><i><span style="width:${t2.t ? t2.n / t2.t * 100 : 0}%"></span></i></button>`; }).join('')}</div>
-     <div class="card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2 style="margin:0">${d.e} ${esc(d.t)}</h2><p class="note" style="margin:4px 0 0">${esc(d.foco)}</p></div>${ring(tt.t ? tt.n / tt.t : 0, 54, 6, 'var(--mint)', 'var(--sf2)', `${tt.n}/${tt.t}`)}</div>
+     <div class="days" style="grid-template-columns:repeat(${shown.length},1fr)">${shown.map(([x, i]) => { const t2 = dayTotals(i); const dc = DC[i] || 'ac'; return `<button class="day ${i === S.day ? 'on' : ''}" style="--dt:var(--${dc}2);--dp:var(--${dc}p);--dd:var(--${dc}d)" data-act="day" data-i="${i}"><b>${x.free ? 'Livre' : 'Dia ' + (i + 1)}</b><small>${x.free ? 'à medida' : x.t.split(/[ ,]/)[0]}</small><i><span style="width:${t2.t ? t2.n / t2.t * 100 : 0}%"></span></i></button>`; }).join('')}</div>
+     <div class="card" style="background:var(--${DC[S.day] || 'ac'}2);border-color:transparent;box-shadow:none"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div><h2 style="margin:0">${d.e} ${esc(d.t)}</h2><p class="note" style="margin:4px 0 0">${esc(d.foco)}</p></div>${ring(tt.t ? tt.n / tt.t : 0, 54, 6, 'var(--mint)', 'var(--sf2)', `${tt.n}/${tt.t}`)}</div>
       <div class="tags" style="margin-top:12px"><span class="tag">${ic('dumb', 12)} ${tt.t} exercícios</span><span class="tag">~${f0(tt.mAll + tt.t * 3)} min</span><span class="tag ac">${ic('flame', 12)} ${f0(tt.k)} kcal gastas</span></div></div>
      <div class="card list">${d.ids.map((id, i) => {
       const x = EX[id], on = isChecked(id + '_' + i), key = id + '_' + S.ph + '_' + S.day, r = kcalEx(x, key);
@@ -277,7 +233,7 @@ function renderTreino() {
   } else if (UI.treino === 'exp') {
     const t = today(), doneT = sessOf(t), w = calc().w || 0;
     const items = SESS.map(se => ({ se })).concat(ROUT.map(ro => ({ ro }))).filter(o => { const it = o.se || o.ro; return (UI.xt === 'all' || it.tipo === UI.xt) && (UI.xp === 'all' || it.place === UI.xp); });
-    body = `<div class="act2"><button style="background:var(--plum)" data-act="genOpen">${ic('wand', 24)}<span>Criar treino<small>à medida, em 3 toques</small></span></button><button style="background:var(--ac)" data-act="timerOpen">${ic('timer', 24)}<span>Temporizador<small>tabata, HIIT, à tua escolha</small></span></button></div>
+    body = `<div class="act2"><button class="a-lil" data-act="genOpen">${ic('wand', 24)}<span>Criar treino<small>à medida, em 3 toques</small></span></button><button class="a-ac" data-act="timerOpen">${ic('timer', 24)}<span>Temporizador<small>tabata, HIIT, à tua escolha</small></span></button></div>
      <div class="chips">${[['all', 'Todos']].concat(Object.entries(TN)).map(([k, n]) => `<button class="chip ${k === UI.xt ? 'on' : ''}" data-act="xt" data-v="${k}">${n}</button>`).join('')}</div>
      <div class="seg" style="margin-top:2px">${[['all', 'Tudo'], ['gin', 'No ginásio'], ['casa', 'Em casa']].map(([v, l]) => `<button class="${UI.xp === v ? 'on' : ''}" data-act="xp" data-v="${v}">${l}</button>`).join('')}</div>
      <p class="note" style="margin:0 2px 10px">${items.length} treinos. <b>Guiado</b>: segues o ecrã, com tempo, som e vibração. <b>Lista</b>: passa para o teu plano como “Treino livre”, com cargas e séries.</p>` +
@@ -420,44 +376,44 @@ function renderComer() {
 const MF = [['p', 'Peso', 'kg'], ['c', 'Cintura', 'cm'], ['a', 'Anca', 'cm'], ['t', 'Coxa', 'cm'], ['b', 'Braço', 'cm'], ['h', 'Peito', 'cm']];
 const medS = k => [...S.med].filter(e => e[k] != null).sort((a, b) => a.d < b.d ? -1 : 1).map(e => ({ d: e.d, v: e[k] }));
 const GM = [
-  { k: 'p', n: 'Peso (kg)', t: 'line', u: 'kg', c: '#E5487D', dn: true, get: () => medS('p') },
-  { k: 'c', n: 'Cintura (cm)', t: 'line', u: 'cm', c: '#7357DB', dn: true, get: () => medS('c') },
-  { k: 'a', n: 'Anca (cm)', t: 'line', u: 'cm', c: '#7357DB', dn: true, get: () => medS('a') },
-  { k: 't', n: 'Coxa (cm)', t: 'line', u: 'cm', c: '#7357DB', dn: true, get: () => medS('t') },
-  { k: 'b', n: 'Braço (cm)', t: 'line', u: 'cm', c: '#1E9A6C', get: () => medS('b') },
-  { k: 'h', n: 'Peito (cm)', t: 'line', u: 'cm', c: '#1E9A6C', get: () => medS('h') },
-  { k: 'kt', n: 'Calorias gastas no treino', t: 'bar', u: 'kcal', c: '#E5487D', get: d => kcalDate(d) },
-  { k: 'w', n: 'Água por dia (ml)', t: 'bar', u: 'ml', c: '#4C93E8', ref: () => waterBase(), get: d => S.water[d] || 0 },
-  { k: 'i', n: 'Calorias comidas por dia', t: 'bar', u: 'kcal', c: '#C77E12', ref: () => kcalTarget(), get: d => dayEat(d).k },
-  { k: 'hc', n: 'Hidratos líquidos por dia (g)', t: 'bar', u: 'g', c: '#7357DB', ref: () => 30, get: d => dayEat(d).c },
-  { k: 'fj', n: 'Jejum (horas)', t: 'bar', u: 'h', c: '#7357DB', ref: () => S.fast.goal, get: d => fastHours(d) },
-  { k: 'dor', n: 'Dor lombar (0–3)', t: 'bar', u: '', c: '#C77E12', get: d => (S.ck[d] || {}).dor || 0 },
-  { k: 'st', n: 'Passos por dia', t: 'bar', u: 'passos', c: '#1E9A6C', ref: () => 8000, get: d => +S.steps[d] || 0 },
-  { k: 'tw', n: 'Treinos feitos por semana', t: 'week', u: 'treinos', c: '#3A1C39', ref: () => 4 },
+  { k: 'p', n: 'Peso (kg)', t: 'line', u: 'kg', c: 'var(--ac)', dn: true, get: () => medS('p') },
+  { k: 'c', n: 'Cintura (cm)', t: 'line', u: 'cm', c: 'var(--lil)', dn: true, get: () => medS('c') },
+  { k: 'a', n: 'Anca (cm)', t: 'line', u: 'cm', c: 'var(--lil)', dn: true, get: () => medS('a') },
+  { k: 't', n: 'Coxa (cm)', t: 'line', u: 'cm', c: 'var(--lil)', dn: true, get: () => medS('t') },
+  { k: 'b', n: 'Braço (cm)', t: 'line', u: 'cm', c: 'var(--mint)', get: () => medS('b') },
+  { k: 'h', n: 'Peito (cm)', t: 'line', u: 'cm', c: 'var(--mint)', get: () => medS('h') },
+  { k: 'kt', n: 'Calorias gastas no treino', t: 'bar', u: 'kcal', c: 'var(--ac)', get: d => kcalDate(d) },
+  { k: 'w', n: 'Água por dia (ml)', t: 'bar', u: 'ml', c: 'var(--sky)', ref: () => waterBase(), get: d => S.water[d] || 0 },
+  { k: 'i', n: 'Calorias comidas por dia', t: 'bar', u: 'kcal', c: 'var(--amb)', ref: () => kcalTarget(), get: d => dayEat(d).k },
+  { k: 'hc', n: 'Hidratos líquidos por dia (g)', t: 'bar', u: 'g', c: 'var(--lil)', ref: () => 30, get: d => dayEat(d).c },
+  { k: 'fj', n: 'Jejum (horas)', t: 'bar', u: 'h', c: 'var(--lil)', ref: () => S.fast.goal, get: d => fastHours(d) },
+  { k: 'dor', n: 'Dor lombar (0–3)', t: 'bar', u: '', c: 'var(--amb)', get: d => (S.ck[d] || {}).dor || 0 },
+  { k: 'st', n: 'Passos por dia', t: 'bar', u: 'passos', c: 'var(--mint)', ref: () => 8000, get: d => +S.steps[d] || 0 },
+  { k: 'tw', n: 'Treinos feitos por semana', t: 'week', u: 'treinos', c: 'var(--ink)', ref: () => 4 },
 ];
 function reg(pts) { const xs = pts.map(p => diffD(pts[0].d, p.d)), n = xs.length; const sx = xs.reduce((a, b) => a + b, 0), sy = pts.reduce((a, p) => a + p.v, 0), sxy = xs.reduce((a, x, i) => a + x * pts[i].v, 0), sxx = xs.reduce((a, x) => a + x * x, 0); const den = n * sxx - sx * sx; if (!den) return null; const b = (n * sxy - sx * sy) / den; return { b, a: (sy - b * sx) / n }; }
 const GW = 330, GH = 200, GL = 40, GR = 10, GT = 14, GB = 26;
-function yTicks(mn, mx, Y, fmt) { let s = ''; for (let i = 0; i < 4; i++) { const v = mn + (mx - mn) * i / 3; s += `<line x1="${GL}" x2="${GW - GR}" y1="${Y(v)}" y2="${Y(v)}" stroke="#EEE2E8"/><text x="${GL - 6}" y="${Y(v) + 3}" font-size="9.5" text-anchor="end" fill="#A3909E">${fmt(v)}</text>`; } return s; }
+function yTicks(mn, mx, Y, fmt) { let s = ''; for (let i = 0; i < 4; i++) { const v = mn + (mx - mn) * i / 3; s += `<line x1="${GL}" x2="${GW - GR}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${GL - 6}" y="${Y(v) + 3}" font-size="9.5" text-anchor="end" fill="var(--mut)">${fmt(v)}</text>`; } return s; }
 function svgLine(pts, col) {
   const xs = pts.map(p => diffD(pts[0].d, p.d)), xm = Math.max(...xs, 1);
   let mn = Math.min(...pts.map(p => p.v)), mx = Math.max(...pts.map(p => p.v)); const pd = (mx - mn) * 0.2 || 1; mn -= pd; mx += pd;
   const X = v => GL + v / xm * (GW - GL - GR), Y = v => GT + (1 - (v - mn) / (mx - mn)) * (GH - GT - GB);
   let s = yTicks(mn, mx, Y, v => v.toFixed(1).replace('.', ','));
   const r = pts.length >= 3 ? reg(pts) : null;
-  if (r) s += `<line x1="${X(0)}" y1="${Y(r.a)}" x2="${X(xm)}" y2="${Y(r.a + r.b * xm)}" stroke="#2A1A28" stroke-width="1.5" stroke-dasharray="5 4" opacity=".45"/>`;
+  if (r) s += `<line x1="${X(0)}" y1="${Y(r.a)}" x2="${X(xm)}" y2="${Y(r.a + r.b * xm)}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".45"/>`;
   s += `<path d="M${pts.map((p, i) => X(xs[i]) + ',' + Y(p.v)).join(' L')} L${X(xs[xs.length - 1])},${GH - GB} L${X(0)},${GH - GB}Z" fill="${col}" opacity=".08"/>`;
   s += `<polyline points="${pts.map((p, i) => X(xs[i]) + ',' + Y(p.v)).join(' ')}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-  s += pts.map((p, i) => `<circle cx="${X(xs[i])}" cy="${Y(p.v)}" r="${pts.length > 30 ? 2.5 : 4}" fill="#fff" stroke="${col}" stroke-width="2"/>`).join('');
-  const lp = pts[pts.length - 1]; s += `<text x="${X(xs[xs.length - 1])}" y="${Y(lp.v) - 10}" font-size="11" font-weight="800" text-anchor="end" fill="#2A1A28">${f1(lp.v)}</text>`;
-  s += `<text x="${GL}" y="${GH - 8}" font-size="9.5" fill="#A3909E">${dm(pts[0].d)}</text><text x="${GW - GR}" y="${GH - 8}" font-size="9.5" text-anchor="end" fill="#A3909E">${dm(lp.d)}</text>`;
+  s += pts.map((p, i) => `<circle cx="${X(xs[i])}" cy="${Y(p.v)}" r="${pts.length > 30 ? 2.5 : 4}" fill="var(--sf)" stroke="${col}" stroke-width="2"/>`).join('');
+  const lp = pts[pts.length - 1]; s += `<text x="${X(xs[xs.length - 1])}" y="${Y(lp.v) - 10}" font-size="11" font-weight="800" text-anchor="end" fill="var(--ink)">${f1(lp.v)}</text>`;
+  s += `<text x="${GL}" y="${GH - 8}" font-size="9.5" fill="var(--mut)">${dm(pts[0].d)}</text><text x="${GW - GR}" y="${GH - 8}" font-size="9.5" text-anchor="end" fill="var(--mut)">${dm(lp.d)}</text>`;
   return `<svg viewBox="0 0 ${GW} ${GH}" style="width:100%;height:auto" role="img" aria-label="gráfico">${s}</svg>`;
 }
 function svgBars(cats, col, ref) {
   const mx = Math.max(ref || 0, ...cats.map(c => c.v), 1) * 1.12, bw = (GW - GL - GR) / cats.length, Y = v => GT + (1 - v / mx) * (GH - GT - GB);
   let s = yTicks(0, mx, Y, v => f0(v));
-  if (ref) s += `<line x1="${GL}" x2="${GW - GR}" y1="${Y(ref)}" y2="${Y(ref)}" stroke="#2A1A28" stroke-width="1.5" stroke-dasharray="5 4" opacity=".5"/><text x="${GW - GR}" y="${Y(ref) - 4}" font-size="9.5" text-anchor="end" fill="#2A1A28">meta ${f0(ref)}</text>`;
+  if (ref) s += `<line x1="${GL}" x2="${GW - GR}" y1="${Y(ref)}" y2="${Y(ref)}" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="5 4" opacity=".5"/><text x="${GW - GR}" y="${Y(ref) - 4}" font-size="9.5" text-anchor="end" fill="var(--ink)">meta ${f0(ref)}</text>`;
   s += cats.map((c, i) => c.v > 0 ? `<rect x="${GL + i * bw + bw * .18}" y="${Y(c.v)}" width="${bw * .64}" height="${Y(0) - Y(c.v)}" rx="${Math.min(4, bw * .3)}" fill="${col}"/>` : '').join('');
-  s += `<text x="${GL}" y="${GH - 8}" font-size="9.5" fill="#A3909E">${cats[0].l}</text><text x="${GW - GR}" y="${GH - 8}" font-size="9.5" text-anchor="end" fill="#A3909E">${cats[cats.length - 1].l}</text>`;
+  s += `<text x="${GL}" y="${GH - 8}" font-size="9.5" fill="var(--mut)">${cats[0].l}</text><text x="${GW - GR}" y="${GH - 8}" font-size="9.5" text-anchor="end" fill="var(--mut)">${cats[cats.length - 1].l}</text>`;
   return `<svg viewBox="0 0 ${GW} ${GH}" style="width:100%;height:auto" role="img" aria-label="gráfico">${s}</svg>`;
 }
 function renderProg() {
@@ -474,13 +430,13 @@ function renderProg() {
         <div class="card kpi"><small>Para emagrecer</small><b>${f0(kcalTarget())}</b><span class="u">kcal</span><span class="s">~500 abaixo, mín. 1400</span></div></div>
        <div class="card list" style="margin-top:12px">
         <div class="row"><div class="ic">${ic('food', 18)}</div><div class="tx"><b>${f0(prot * 0.9)}–${f0(prot)} g de proteína por dia</b><small>protege o músculo enquanto emagreces</small></div></div>
-        <div class="row"><div class="ic" style="background:#E6F0FD;color:#2F78D6">${ic('drop', 18)}</div><div class="tx"><b>${fL(waterBase())} L de água por dia</b><small>+0,5 L em dia de treino ou plantão</small></div></div>
+        <div class="row"><div class="ic" style="background:var(--sky2);color:var(--skyd)">${ic('drop', 18)}</div><div class="tx"><b>${fL(waterBase())} L de água por dia</b><small>+0,5 L em dia de treino ou plantão</small></div></div>
         <div class="row"><div class="ic" style="background:var(--mint2);color:var(--mint)">${ic('target', 18)}</div><div class="tx"><b>Peso saudável: ${f0(pmin)}–${f0(pmax)} kg</b><small>meta realista: 0,3–0,6 kg por semana</small></div></div></div>
        <p class="note" style="margin:4px 2px">Fórmula de Mifflin-St Jeor (mulheres). Estimativas com ±10 %. Não substitui a avaliação de um nutricionista ou médico do desporto.</p>`;
     }
   } else if (UI.prog === 'medidas') {
     const arr = [...S.med].sort((a, b) => a.d < b.d ? -1 : 1), first = arr[0], last = arr[arr.length - 1];
-    body = `<div class="card"><h3>Novo registo</h3><p class="note" style="margin:4px 0 4px">1× por semana, de manhã, em jejum, sempre nos mesmos pontos.</p>
+    body = cycWeighNote() + `<div class="card"><h3>Novo registo</h3><p class="note" style="margin:4px 0 4px">1× por semana, de manhã, em jejum, sempre nos mesmos pontos.</p>
       <label class="f">Data</label><input class="in" type="date" id="md" value="${t}">
       <div class="grid2">${MF.map(([k, n, u]) => `<div><label class="f">${n} (${u})</label><input class="in" type="number" inputmode="decimal" step="0.1" id="m_${k}"></div>`).join('')}</div>
       <button class="btn w" style="margin-top:14px" data-act="saveMed">Guardar medidas</button>
@@ -535,8 +491,13 @@ function renderMais() {
   const el = $('s-mais');
   const back = `<button class="back" data-act="seg" data-k="mais" data-v="menu">${ic('left', 18)} Mais</button>`;
   if (UI.mais === 'menu') {
-    const items = [['desafio', 'target', 'Desafio de dias', S.chal ? esc(S.chal.name) : 'cria o teu, ao estilo 75 Hard'], ['conq', 'medal', 'Conquistas', Object.keys(S.badges || {}).length + ' de ' + BADGES.length + ' desbloqueadas'], ['progredir', 'up', 'Como subir as cargas', 'quando subir, quanto, e quando manter'], ['perfil', 'user', 'Perfil e dados', 'peso, altura, idade, atividade'], ['regras', 'book', 'Regras de ouro do treino', 'para principiantes e para a lombar'], ['instalar', 'phone', 'Instalar a app', isStandalone() ? 'já está instalada ✓' : 'ícone no ecrã e funciona offline'], ['backup', 'down', 'Cópia de segurança', 'exportar ou importar os teus dados'], ['sobre', 'info', 'Sobre', 'fotos, fontes e avisos']];
-    el.innerHTML = head('Definições e extras', 'Mais') + `<div class="card list">${items.map(([k, i, a, b]) => `<button class="row" data-act="${k === 'perfil' ? 'profile' : k === 'instalar' ? 'installInfo' : 'seg'}" data-k="mais" data-v="${k}"><div class="ic">${ic(i, 18)}</div><div class="tx"><b>${a}</b><small>${b}</small></div><span class="chev">${ic('chev', 18)}</span></button>`).join('')}</div>`;
+    el.innerHTML = menuHtml();
+  } else if (UI.mais === 'aprender') {
+    el.innerHTML = (UI.mod ? '' : back) + learnHtml();
+  } else if (UI.mais === 'ciclo') {
+    el.innerHTML = back + head('Opcional e privado', 'Ciclo') + cycHtml();
+  } else if (UI.mais === 'aparencia') {
+    el.innerHTML = back + head('Ao teu gosto', 'Aparência') + aparenciaHtml();
   } else if (UI.mais === 'regras') {
     const R = [['Aquece', '5–8 min de passadeira ou bicicleta antes de tudo.'], ['Carga certa', 'as últimas 2 repetições custam, mas a técnica fica perfeita. Sobe a carga quando 3 × 12 ficar fácil.'], ['Ritmo', '1–2 s a empurrar ou puxar, 3 s a voltar. Expira no esforço.'], ['Descanso', '60–90 s entre séries.'], ['Regula a máquina', 'o eixo da máquina alinhado com a tua articulação. Pede ajuda a um instrutor na primeira vez.'], ['Coluna', 'costas sempre apoiadas, sem arredondar nem arquear. Se a lombalgia agudizar, para e troca de exercício.'], ['Plantão', 'não treines no dia do plantão nem no dia seguinte. Retoma no próximo dia do plano.']];
     el.innerHTML = back + head('Para principiantes', 'Regras de ouro') + `<div class="card"><ol class="steps">${R.map(([a, b]) => `<li><div><b>${a}.</b> ${b}</div></li>`).join('')}</ol></div>`;
@@ -549,7 +510,7 @@ function renderMais() {
     el.innerHTML = back + head('Os teus dados', 'Cópia de segurança') + `<div class="card"><p class="note" style="margin-top:0">Tudo fica guardado só neste telemóvel. Faz uma cópia de vez em quando, para não perderes nada se trocares de telemóvel ou limpares o browser.</p><div class="btns"><button class="btn" data-act="export">${ic('down', 18)} Exportar</button><button class="btn ghost" data-act="import">${ic('up', 18)} Importar</button></div></div>
      <div class="card flat"><b>Apagar tudo</b><p class="note">Recomeça a app do zero neste telemóvel.</p><button class="btn soft sm" data-act="wipe">${ic('trash', 16)} Apagar os meus dados</button></div>`;
   } else if (UI.mais === 'sobre') {
-    el.innerHTML = back + head('Feita à tua medida', 'Push It') + `<div class="card"><p style="margin-top:0">App pessoal de treino, alimentação keto, água e progresso, feita à medida: amiga da coluna e a funcionar sem internet.</p><p class="note">Fotos dos exercícios: <b>Free Exercise DB</b> (domínio público). Fonte: Plus Jakarta Sans (SIL OFL). Gasto calórico estimado com METs do Compêndio de Atividades Físicas; metabolismo pela fórmula de Mifflin-St Jeor.</p><p class="note" style="margin-bottom:0">É uma ferramenta de apoio e não substitui a avaliação de um médico, nutricionista ou fisioterapeuta.</p></div>`;
+    el.innerHTML = back + head('Feita à tua medida', 'Push It') + `<div class="card"><p style="margin-top:0">App pessoal de treino, alimentação keto, água e progresso, feita à medida: amiga da coluna e a funcionar sem internet.</p><p class="note">Fotos dos exercícios: <b>Free Exercise DB</b> (domínio público). Fontes: Bricolage Grotesque e Plus Jakarta Sans (SIL OFL). Gasto calórico estimado com METs do Compêndio de Atividades Físicas; metabolismo pela fórmula de Mifflin-St Jeor.</p><p class="note" style="margin-bottom:0">É uma ferramenta de apoio e não substitui a avaliação de um médico, nutricionista ou fisioterapeuta.</p></div>`;
   } else if (UI.mais === 'desafio') {
     el.innerHTML = back + renderChal();
     const n = $('cname'); if (n) n.oninput = () => draft.name = n.value;
@@ -582,7 +543,7 @@ function renderChal() {
     `<div class="card"><div class="bar"><i style="width:${Math.min(100, (st.ok + st.rest) / c.days * 100)}%"></i></div>
      <div class="grid2" style="margin-top:14px"><div class="kpi"><small>Sequência atual</small><b>${st.cur}</b><span class="u">dias 🔥</span></div><div class="kpi"><small>Melhor sequência</small><b>${st.best}</b><span class="u">dias</span></div><div class="kpi"><small>Cumpridos</small><b>${st.ok}</b></div><div class="kpi"><small>Descansos</small><b>${st.rest}</b></div></div>
      ${st.miss ? `<p class="note" style="margin:12px 0 0">Falhaste ${st.miss} dia(s). Sem drama: o que conta é voltares amanhã.</p>` : ''}</div>
-    <div class="card"><div class="cal">${cal}</div><div class="tags" style="margin-top:12px"><span class="tag ac">cumprido</span><span class="tag lil">descanso</span><span class="tag" style="background:#FBE1E1;color:#B33434">falhado</span></div></div>
+    <div class="card"><div class="cal">${cal}</div><div class="tags" style="margin-top:12px"><span class="tag ac">cumprido</span><span class="tag lil">descanso</span><span class="tag bad">falhado</span></div></div>
     <div class="sec">${dfull(cd)}${s ? ' · ' + ({ ok: 'cumprido ✓', rest: 'descanso', miss: 'falhado', pending: 'em curso' }[s]) : ''}</div>
     <div class="card list">${list}</div>
     <button class="btn ghost w" data-act="creset">Terminar e criar outro desafio</button>`;
@@ -631,8 +592,8 @@ function installInfo() {
    ========================================================= */
 const TABS = [['hoje', 'home', 'Hoje'], ['treino', 'dumb', 'Treino'], ['comer', 'food', 'Comer'], ['prog', 'chart', 'Progresso'], ['mais', 'grid', 'Mais']];
 const RENDER = { hoje: renderHoje, treino: renderTreino, comer: renderComer, prog: renderProg, mais: renderMais };
-function renderTabs() { $('tabs').innerHTML = TABS.map(([k, i, l]) => `<button class="tab ${k === tab ? 'on' : ''}" data-act="tab" data-tab="${k}" aria-label="${l}"><span class="pip">${ic(i, 21)}</span>${l}</button>`).join(''); }
-function render() { RENDER[tab](); checkBadges(); }
+function renderTabs() { renderSide(); $('tabs').innerHTML = TABS.map(([k, i, l]) => `<button class="tab ${k === tab ? 'on' : ''}" data-act="tab" data-tab="${k}" aria-label="${l}"><span class="pip">${ic(i, 21)}</span>${l}</button>`).join(''); }
+function render() { RENDER[tab](); checkBadges(); checkLevel(); renderSide(); }
 function goTab(t, sub) {
   tab = t; if (sub) UI[t] = sub === 'casa' ? 'exp' : sub;
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === 's-' + t));
@@ -647,7 +608,23 @@ function tick(i) {
   save();
 }
 const ACT = {
-  tab: e => { if (e.dataset.tab === 'mais') UI.mais = 'menu'; goTab(e.dataset.tab); },
+  tab: e => { if (e.dataset.tab === 'mais') { UI.mais = 'menu'; UI.mod = null; } goTab(e.dataset.tab); },
+  side: e => { if (e.dataset.tab === 'mais') { UI.mais = e.dataset.sub || 'menu'; UI.mod = null; } goTab(e.dataset.tab); },
+  lvlSheet: () => lvlSheet(),
+  theme: e => { S.theme = e.dataset.v; save(); applyTheme(); render(); },
+  accent: e => { S.accent = e.dataset.v; save(); applyTheme(); render(); },
+  cycOn: e => { S.cyc.on = !!e.checked; save(); render(); },
+  cycStart: () => { const t = today(); if (!S.cyc.starts.includes(t)) S.cyc.starts.push(t); save(); render(); toast('Registado: dia 1 do ciclo'); },
+  cycAdd: () => { const v = $('cycd').value; if (!v) { toast('Escolhe a data'); return; } if (!S.cyc.starts.includes(v)) S.cyc.starts.push(v); save(); render(); toast('Registado'); },
+  cycPer: e => { S.cyc.per = +e.dataset.v; save(); render(); },
+  cycDel: e => { S.cyc.starts = S.cyc.starts.filter(x => x !== e.dataset.d); save(); render(); },
+  mod: e => { UI.mod = e.dataset.m; render(); window.scrollTo(0, 0); },
+  modBack: () => { UI.mod = null; render(); },
+  lesson: e => lessonSheet(e.dataset.m, +e.dataset.i),
+  lessonDone: e => { const m = MODS.find(x => x.id === e.dataset.m), i = +e.dataset.i, p = lp(m.id); if (!p.l.includes(i)) p.l.push(i); save(); render(); toast('Lição lida · +20 XP'); if (i + 1 < m.L.length) lessonSheet(m.id, i + 1); else { UI.qz = { m: m.id, i: 0, ok: 0, pick: null }; quizSheet(); } },
+  quiz: e => { UI.qz = { m: e.dataset.m, i: 0, ok: 0, pick: null }; quizSheet(); },
+  qpick: e => { const z = UI.qz, m = MODS.find(x => x.id === z.m), k = +e.dataset.k; if (z.pick != null) return; z.pick = k; if (k === m.Q[z.i].a) z.ok++; quizSheet(); },
+  qnext: () => { const z = UI.qz, m = MODS.find(x => x.id === z.m); z.i++; z.pick = null; if (z.i >= m.Q.length) { const pct = Math.round(z.ok / m.Q.length * 100), p = lp(z.m); if (p.q == null || pct > p.q) p.q = pct; save(); render(); } quizSheet(); },
   go: e => goTab(e.dataset.tab, e.dataset.sub),
   seg: e => { UI[e.dataset.k] = e.dataset.v; render(); window.scrollTo(0, 0); },
   profile: () => profileSheet(),
@@ -744,7 +721,7 @@ const ACT = {
   tmSet: e => { const k = e.dataset.k, lim = { w: [5, 600], r: [0, 300], n: [1, 60] }[k], stp = k === 'n' ? 1 : 5; UI.tm[k] = Math.max(lim[0], Math.min(lim[1], UI.tm[k] + (+e.dataset.d) * stp)); timerSheet(); },
   tmPre: e => { const [w, r, n] = e.dataset.v.split(',').map(Number); UI.tm = { w, r, n }; timerSheet(); },
   tmStart: () => { const { w, r, n } = UI.tm, st = []; for (let i = 0; i < n; i++) { st.push({ k: 'w', sec: w, lbl: 'Volta ' + (i + 1) + ' de ' + n }); if (r && i < n - 1) st.push({ k: 'r', sec: r }); } playerStart({ id: 'timer', n: 'Temporizador', met: 6, tipo: 'cardio', _st: st }); },
-  ck: e => { const t = today(); S.ck[t] = S.ck[t] || {}; S.ck[t][e.dataset.k] = +e.dataset.v; if (S.ck[t].dor != null && S.ck[t].en != null) UI.ckEdit = false; save(); render(); },
+  ck: e => { const t = today(); S.ck[t] = S.ck[t] || {}; S.ck[t][e.dataset.k] = +e.dataset.v; if (S.ck[t].dor != null && S.ck[t].en != null && S.ck[t].sono != null) UI.ckEdit = false; save(); render(); },
   ckEdit: () => { UI.ckEdit = true; render(); },
   foodOpen: () => foodSheet(),
   foodAdd: e => { const t = today(); S.food[t] = S.food[t] || []; const ex = S.food[t].find(x => x.id === e.dataset.id); if (ex) ex.q += 1; else S.food[t].push({ id: e.dataset.id, q: 1 }); save(); render(); toast('Adicionado: ' + foodInfo(e.dataset.id).n.split(' (')[0]); },
@@ -821,7 +798,7 @@ function loadSheet(id) {
   const x = EX[id], h = loadHist(id), sg = suggest(id), pts = h.map(e => ({ d: e.d, v: e.kg }));
   openSheet(`<div class="shead"><div><p class="eyebrow">Histórico de cargas</p><h2 style="margin:0">${esc(x.n)}</h2><p class="note" style="margin:2px 0 0">${esc(x.eq)}${x.step === 1 ? ' · kg por halter' : ''}</p></div><button class="x" data-act="closeSheet" aria-label="Fechar">${ic('x', 18)}</button></div>
    <div class="stack"><div class="call ${sg.dir === 'up' ? '' : sg.dir === 'down' ? 'amb' : 'lil'}">${ic(sg.dir === 'up' ? 'up' : sg.dir === 'down' ? 'down' : 'info', 18)}<div>${sg.msg}</div></div>
-   ${pts.length > 1 ? svgLine(pts, '#1E9A6C') : '<p class="note">Com 2 ou mais sessões aparece aqui o gráfico.</p>'}
+   ${pts.length > 1 ? svgLine(pts, 'var(--mint)') : '<p class="note">Com 2 ou mais sessões aparece aqui o gráfico.</p>'}
    <div class="card list flat" style="margin:0">${[...h].reverse().map(e => `<div class="row"><div class="tx"><b>${fk(e.kg)}</b><small>${dfull(e.d)} · ${FEEL[e.f]}</small></div><button class="x" style="width:30px;height:30px" data-act="delLoad" data-id="${id}" data-d="${e.d}" aria-label="Apagar">${ic('x', 14)}</button></div>`).join('')}</div></div>`);
 }
 const GUIDE = [
@@ -1047,7 +1024,7 @@ function diarioHtml() {
    </div>
    ${fastHtml()}
    <div class="sec"><span>Água</span><span style="text-transform:none;letter-spacing:0;font-weight:700">meta ${fL(wg)} L</span></div>
-   <div class="card"><div style="display:flex;gap:16px;align-items:center">${ring(wc / wg, 88, 9, '#4C93E8', 'var(--sf2)', `<span style="font-size:16px">${fL(wc)} L</span>`)}<div style="flex:1"><div class="btns"><button class="btn sm" data-act="water" data-ml="250">+250 ml</button><button class="btn sm" data-act="water" data-ml="500">+500</button><button class="btn sm ghost" data-act="water" data-ml="-250">−250</button></div><p class="note" style="margin:8px 0 0">${wc >= wg ? 'Meta batida! 🎉' : 'Faltam ' + fL(wg - wc) + ' L.'} Base de ${fL(waterBase())} L, +0,5 L com treino ou plantão.</p></div></div></div>
+   <div class="card"><div style="display:flex;gap:16px;align-items:center">${ring(wc / wg, 88, 9, 'var(--sky)', 'var(--sf2)', `<span style="font-size:16px">${fL(wc)} L</span>`)}<div style="flex:1"><div class="btns"><button class="btn sm" data-act="water" data-ml="250">+250 ml</button><button class="btn sm" data-act="water" data-ml="500">+500</button><button class="btn sm ghost" data-act="water" data-ml="-250">−250</button></div><p class="note" style="margin:8px 0 0">${wc >= wg ? 'Meta batida! 🎉' : 'Faltam ' + fL(wg - wc) + ' L.'} Base de ${fL(waterBase())} L, +0,5 L com treino ou plantão.</p></div></div></div>
    <div class="sec">Balanço de hoje</div>
    <div class="card"><label class="f" style="margin-top:0">Passos de hoje</label><input class="in" type="number" inputmode="numeric" value="${stp || ''}" placeholder="copia do Samsung Health ou do relógio" data-act="stepsSet"><p class="note" style="margin:8px 0 0">${stp ? (sk ? 'Somei ~' + f0(sk) + ' kcal ao gasto (só conto acima de 4 000 passos, porque o gasto base já inclui o dia a dia).' : 'Até 4 000 passos já estão incluídos no gasto base.') : 'Opcional. Acima de 4 000 passos somo as calorias extra ao teu gasto.'}</p></div>
    ${c.ok ? `<div class="grid2"><div class="card kpi"><small>Gasto base</small><b>${f0(base)}</b><span class="u">kcal</span><span class="s">TMB × 1,2${pl ? ' + plantão' : ''}</span></div>
@@ -1070,19 +1047,22 @@ function foodSheet() {
    check-in diário (lombar e energia)
    ========================================================= */
 function advice(c) {
-  const yoga = ` <button class="link" data-act="sess" data-id="yogaL">Abrir Yoga para a lombar</button>`;
+  const yoga = ` <button class="link" data-act="sess" data-id="yogaL">Abrir Yoga para a lombar</button>`, ci = cycInfo(today());
+  const cy = ci && (ci.ph === 'men' || ci.ph === 'lut') ? ' ' + CYC_TIP[ci.ph] : '';
   if (c.dor === 3) return { cl: 'amb', t: 'Dor forte: hoje não há treino de carga.', m: 'Caminha um pouco e, se aliviar, faz a yoga suave. Dor que irradia para a perna, formigueiro ou perda de força pedem avaliação.' + yoga };
   if (c.dor === 2) return { cl: 'amb', t: 'Lombar moderada: poupa a coluna.', m: 'Troca o treino pela yoga ou pelo pilates, e evita Smith, hack squat e afundos.' + yoga };
-  if (c.dor === 1) return { cl: 'lil', t: 'Lombar ligeira.', m: 'Aquece bem, mantém as cargas e deixa os recordes para outro dia.' };
-  if (c.en === 0) return { cl: 'lil', t: 'Energia em baixo.', m: 'Faz 2 séries em vez de 3, ou uma sessão curta em casa. Aparecer já conta.' };
-  if (c.en === 2) return { cl: '', t: 'Dia bom!', m: 'Se tiveres cargas marcadas para subir, é hoje.' };
-  return { cl: 'lil', t: 'Tudo normal.', m: 'Segue o plano e vai bebendo água.' };
+  if (c.sono === 0) return { cl: 'lil', t: 'Dormiste pouco.', m: 'Mantém as cargas, faz 2 séries se precisares e evita jejuns longos hoje. Se der, uma sesta de 20 minutos ajuda.' + cy };
+  if (c.dor === 1) return { cl: 'lil', t: 'Lombar ligeira.', m: 'Aquece bem, mantém as cargas e deixa os recordes para outro dia.' + cy };
+  if (c.en === 0) return { cl: 'lil', t: 'Energia em baixo.', m: 'Faz 2 séries em vez de 3, ou uma sessão curta em casa. Aparecer já conta.' + cy };
+  if (c.en === 2 && c.sono === 2) return { cl: '', t: 'Dia bom!', m: 'Dormiste bem e tens energia: se houver cargas marcadas para subir, é hoje.' + cy };
+  if (c.en === 2) return { cl: '', t: 'Dia bom!', m: 'Se tiveres cargas marcadas para subir, é hoje.' + cy };
+  return { cl: 'lil', t: 'Tudo normal.', m: 'Segue o plano e vai bebendo água.' + cy };
 }
 function checkinHtml() {
   const t = today(), c = S.ck[t] || {};
-  if (c.dor != null && c.en != null && !UI.ckEdit) { const a = advice(c); return `<div class="call ${a.cl}" style="margin-bottom:12px">${ic(a.cl === 'amb' ? 'spine' : 'spark', 18)}<div><b>${a.t}</b> ${a.m} <button class="link" style="opacity:.7" data-act="ckEdit">alterar</button></div></div>`; }
+  if (c.dor != null && c.en != null && c.sono != null && !UI.ckEdit) { const a = advice(c); return `<div class="call ${a.cl}" style="margin-bottom:12px">${ic(a.cl === 'amb' ? 'spine' : 'spark', 18)}<div><b>${a.t}</b> ${a.m} <button class="link" style="opacity:.75" data-act="ckEdit">alterar</button></div></div>`; }
   const o = (k, labels) => `<div class="opt">${labels.map((l, i) => `<button class="${c[k] === i ? 'on' : ''}" data-act="ck" data-k="${k}" data-v="${i}">${l}</button>`).join('')}</div>`;
-  return `<div class="card"><h3>Como estás hoje?</h3><p class="note" style="margin:2px 0 0">Dois toques e eu ajusto o conselho do dia.</p><label class="f">Lombar</label>${o('dor', ['Sem dor', 'Ligeira', 'Moderada', 'Forte'])}<label class="f">Energia</label>${o('en', ['Baixa', 'Normal', 'Alta'])}</div>`;
+  return `<div class="card"><h3>Como estás hoje?</h3><p class="note" style="margin:2px 0 0">Três toques e eu ajusto a sugestão do dia.</p><label class="f">Lombar</label>${o('dor', ['Sem dor', 'Ligeira', 'Moderada', 'Forte'])}<label class="f">Energia</label>${o('en', ['Baixa', 'Normal', 'Alta'])}<label class="f">Sono esta noite</label>${o('sono', ['Menos de 6 h', '6–7 h', '7 h ou mais'])}</div>`;
 }
 
 /* =========================================================
@@ -1098,7 +1078,7 @@ function stats() {
     water: Object.keys(S.water).filter(d => S.water[d] >= waterGoal(d)).length, keto: Object.keys(S.meals).filter(mealsDone).length,
     fasts: S.fast.log.filter(x => (x.e - x.s) / 36e5 >= 14).length, sessN, med: S.med.length,
     lost: wts.length > 1 ? Math.max(0, wts[0].p - wts[wts.length - 1].p) : 0, lostC: cs.length > 1 ? Math.max(0, cs[0].c - cs[cs.length - 1].c) : 0,
-    streak: S.chal ? chalStats().best : 0, photoN: S.phN || 0, ck: Object.keys(S.ck).length };
+    streak: S.chal ? chalStats().best : 0, photoN: S.phN || 0, ck: Object.keys(S.ck).length, lessons: Object.values(S.learn || {}).reduce((a, m) => a + (m.l || []).length, 0), perfect: Object.values(S.learn || {}).filter(m => m.q >= 100).length };
 }
 const B = (id, em, n, d, key, goal) => [id, em, n, d, s2 => [s2[key], goal]];
 const BADGES = [
@@ -1109,6 +1089,7 @@ const BADGES = [
   B('fast5', '⏳', 'Mestre do jejum', '5 jejuns de 14 h+', 'fasts', 5), B('ck7', '🩺', 'Atenta ao corpo', '7 check-ins', 'ck', 7), B('med1', '📏', 'Ponto de partida', '1.ª medição', 'med', 1),
   B('foto', '📸', 'Antes e depois', '1.ª foto', 'photoN', 1), B('kg2', '⚖️', 'Menos 2 kg', 'na balança', 'lost', 2), B('kg5', '🎀', 'Menos 5 kg', 'na balança', 'lost', 5),
   B('kg10', '🏆', 'Menos 10 kg', 'na balança', 'lost', 10), B('cm5', '👗', 'Menos 5 cm', 'de cintura', 'lostC', 5), B('streak7', '✨', '7 dias seguidos', 'no desafio', 'streak', 7),
+  B('learn5', '📚', 'Estudiosa', '5 lições lidas', 'lessons', 5), B('learn24', '🎓', 'Sabe tudo', 'todas as lições', 'lessons', 24), B('quiz100', '💯', 'Nota máxima', '1 quiz a 100 %', 'perfect', 1),
 ];
 function checkBadges(silent) {
   const first = !S.badges; if (first) S.badges = {};
@@ -1149,12 +1130,12 @@ function histHtml() {
   let cells = '<span></span>'.repeat(lead), tr = 0, kc = 0, pls = 0;
   for (let d = 1; d <= n; d++) {
     const ds = y + '-' + pad(m) + '-' + pad(d), done = workoutPct(ds) >= 0.8, pl = S.pl[ds] === '1'; if (done) tr++; if (pl) pls++; kc += kcalDate(ds);
-    const dots = [S.water[ds] && S.water[ds] >= waterGoal(ds) ? (done ? '#CFE3FB' : '#4C93E8') : '', mealsDone(ds) ? (done ? '#FBE3B8' : '#C77E12') : '', S.med.some(e => e.d === ds) ? (done ? '#fff' : '#2A1A28') : ''].filter(Boolean);
+    const dots = [S.water[ds] && S.water[ds] >= waterGoal(ds) ? (done ? 'var(--skyp)' : 'var(--sky)') : '', mealsDone(ds) ? (done ? 'var(--ambp)' : 'var(--amb)') : '', S.med.some(e => e.d === ds) ? (done ? 'var(--sf)' : 'var(--ink)') : '', isPeriod(ds) ? (done ? 'var(--acp)' : 'var(--ac)') : ''].filter(Boolean);
     cells += `<button class="mc ${done ? 'tr' : pl ? 'pl' : ''} ${ds === t ? 'td' : ''} ${ds > t ? 'fu' : ''}" data-act="hday" data-d="${ds}">${d}<span class="dots">${dots.map(c2 => `<i style="background:${c2}"></i>`).join('')}</span></button>`;
   }
   return `<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><button class="x" data-act="hm" data-d="-1" aria-label="Mês anterior">${ic('left', 18)}</button><b style="font-size:16px;text-transform:capitalize">${MO[m - 1]} ${y}</b><button class="x" data-act="hm" data-d="1" aria-label="Mês seguinte">${ic('chev', 18)}</button></div>
     <div class="mcal">${['S', 'T', 'Q', 'Q', 'S', 'S', 'D'].map(l => `<div class="hd">${l}</div>`).join('')}${cells}</div>
-    <div class="tags" style="margin-top:14px"><span class="tag mint">treino</span><span class="tag lil">plantão</span><span class="tag" style="background:#E6F0FD;color:#2F78D6">● água</span><span class="tag amb">● keto</span><span class="tag">● medidas</span></div></div>
+    <div class="tags" style="margin-top:14px"><span class="tag mint">treino</span><span class="tag lil">plantão</span><span class="tag" style="background:var(--sky2);color:var(--skyd)">● água</span><span class="tag amb">● keto</span><span class="tag">● medidas</span>${S.cyc && S.cyc.on ? '<span class="tag ac">● menstruação</span>' : ''}</div></div>
    <div class="grid2"><div class="card kpi"><small>Treinos no mês</small><b>${tr}</b></div><div class="card kpi"><small>Gasto em treino</small><b>${f0(kc)}</b><span class="u">kcal</span></div></div>
    <p class="note" style="margin:12px 2px">Toca num dia para ver o que fizeste${pls ? ' · ' + pls + ' plantões este mês' : ''}.</p>`;
 }
@@ -1167,9 +1148,9 @@ function daySheet(ds) {
   ss.forEach(x => rows.push(row('timer', esc(x.n || (SESS.find(s2 => s2.id === x.id) || {}).n || 'Sessão'), `${x.min} min · ${f0(x.k)} kcal${x.full ? ' · completa' : ''}`, 'background:var(--amb2);color:var(--amb)')));
   if (e.k) rows.push(row('food', `Comida · ${f0(e.k)} kcal`, `Proteína ${f0(e.p)} g · HC ${f0(e.c)} g<br>${e.items.map(x => esc(x.n)).join(' · ')}`));
   if (fh) rows.push(row('clock', 'Jejum de ' + fH(fh), 'terminado neste dia', 'background:var(--lil2);color:var(--lil)'));
-  if (S.water[ds]) rows.push(row('drop', `Água · ${fL(S.water[ds])} L`, S.water[ds] >= waterGoal(ds) ? 'meta batida' : 'abaixo da meta', 'background:#E6F0FD;color:#2F78D6'));
+  if (S.water[ds]) rows.push(row('drop', `Água · ${fL(S.water[ds])} L`, S.water[ds] >= waterGoal(ds) ? 'meta batida' : 'abaixo da meta', 'background:var(--sky2);color:var(--skyd)'));
   if (md) rows.push(row('ruler', 'Medidas', MF.filter(([k]) => md[k] != null).map(([k, n, u]) => `${n} ${f1(md[k])} ${u}`).join(' · '), 'background:var(--sf2);color:var(--ink)'));
-  if (c) rows.push(row('spine', 'Check-in', `Lombar: ${['sem dor', 'ligeira', 'moderada', 'forte'][c.dor] || '—'} · Energia: ${['baixa', 'normal', 'alta'][c.en] || '—'}`, 'background:var(--mint2);color:var(--mint)'));
+  if (c) rows.push(row('spine', 'Check-in', `Lombar: ${['sem dor', 'ligeira', 'moderada', 'forte'][c.dor] || '—'} · Energia: ${['baixa', 'normal', 'alta'][c.en] || '—'} · Sono: ${['menos de 6 h', '6–7 h', '7 h ou mais'][c.sono] || '—'}`, 'background:var(--mint2);color:var(--mint)'));
   const d = Dt(ds);
   openSheet(`<div class="shead"><div><p class="eyebrow">${WD[d.getDay()]}</p><h2 style="margin:0">${d.getDate()} de ${MO[d.getMonth()]}</h2></div><button class="x" data-act="closeSheet" aria-label="Fechar">${ic('x', 18)}</button></div>
    ${rows.length ? `<div class="card list flat">${rows.join('')}</div>` : '<p class="note">Sem registos neste dia.</p>'}
@@ -1273,7 +1254,343 @@ function timerSheet() {
    <button class="btn w" data-act="tmStart">${ic('play', 18)} Começar</button>`);
 }
 
+/* =========================================================
+   aprender: módulos curtos com lições e quiz
+   ========================================================= */
+const MODS = [
+  { id: 'maq', n: 'Máquinas sem medo', em: '🏋️', c: 'sky', desc: 'Regular, escolher a carga, ritmo e segurança no ginásio.',
+    L: [
+      { t: 'Regular a máquina em 30 segundos', b: ['Cada máquina tem um eixo, o ponto onde roda. Esse eixo deve ficar alinhado com a articulação que trabalha: o joelho na extensão de pernas, o cotovelo no bíceps, o ombro no supino.', 'Ajusta o assento para que as pegas fiquem à altura certa (meio do peito no supino, ombros no desenvolvimento) e para que as costas fiquem coladas ao encosto.', 'Na primeira vez, pede ao instrutor para verificar. Tira uma foto aos números dos pinos: da próxima vez é só copiar.'], tip: 'Na Biblioteca, o 1.º passo de cada exercício diz como regular a máquina.' },
+      { t: 'Quanto peso pôr', b: ['Escolhe uma carga em que as últimas 2 repetições custam, mas a técnica fica perfeita.', 'Se acabas a série e ainda fazias mais 3 ou mais, está leve. Se a técnica falha antes do fim, está pesada.', 'Na dúvida, começa leve: é mais fácil subir do que recuperar de uma lesão.'], tip: 'Ao acabar as séries, diz como correu: a app sugere a carga da próxima vez.' },
+      { t: 'Ritmo e respiração', b: ['Empurra ou puxa em 1–2 segundos e volta em 3, a controlar. A volta lenta é metade do trabalho.', 'Expira no esforço e inspira ao voltar. Prender a respiração em séries longas sobe a tensão arterial e cansa mais depressa.', 'Não deixes os pesos bater na pilha entre repetições: o músculo deve ficar sempre a trabalhar.'] },
+      { t: 'Segurança e etiqueta', b: ['Aquece 5–8 minutos antes. Na Smith e no hack squat, aprende primeiro onde ficam as travas: roda a barra ou o manípulo para destravar e volta a travar no fim.', 'Limpa o banco depois de usar. Se uma máquina estiver ocupada, pergunta “falta-te muito?”: muitas vezes dá para alternar séries.', 'Dor aguda, picada ou formigueiro: para. Ardor no músculo é normal.'] },
+    ],
+    Q: [
+      { q: 'Na extensão de pernas, o eixo da máquina deve ficar alinhado com…', o: ['O tornozelo', 'O joelho', 'A anca'], a: 1, e: 'O eixo roda com a articulação que trabalha: na extensão de pernas é o joelho.' },
+      { q: 'Fizeste 3 × 12 e ainda conseguias mais 4 repetições em cada série. A carga está…', o: ['No ponto', 'Leve: podes subir', 'Pesada'], a: 1, e: 'No ponto é acabar com 1–2 repetições de reserva. Com 4 de reserva, sobe na próxima sessão.' },
+      { q: 'Quando é que expiras?', o: ['Ao voltar à posição inicial', 'No esforço, a empurrar ou puxar', 'Nunca: prende-se o ar'], a: 1, e: 'Expira no esforço e inspira ao voltar.' },
+      { q: 'Na máquina Smith, antes de começar…', o: ['Destravas a barra rodando-a e, no fim, voltas a travá-la', 'Tiras os pesos todos', 'Pedes sempre a alguém para segurar a barra'], a: 0, e: 'A Smith tem ganchos de segurança: roda-se a barra para destravar e voltar a travar.' },
+    ] },
+  { id: 'lombar', n: 'Lombar protegida', em: '🦴', c: 'mint', desc: 'Core, coluna neutra, dias de crise e sinais de alarme.',
+    L: [
+      { t: 'Porque é que o core protege a coluna', b: ['Os abdominais profundos, os oblíquos, os glúteos e os músculos das costas funcionam como um colete natural. Quanto mais fortes e coordenados, menos carga vai para os discos e ligamentos.', 'Para a lombar interessa mais a resistência do core (aguentar a posição) do que a força bruta. Por isso a app usa pranchas, prancha lateral e dead bug em vez de abdominais com flexão.'], tip: 'O treino “Core seguro para a lombar”, em Explorar, junta estes exercícios.' },
+      { t: 'Coluna neutra e bracing', b: ['Coluna neutra é a curva natural das costas: nem arredondada nem arqueada. É a posição mais segura para fazer força.', 'Bracing é contrair a barriga como se fosses levar um toque no estômago, sem a encolher para dentro. Faz isto antes de cada repetição pesada, sem deixar de respirar.', 'Os momentos de maior risco são dobrar e rodar ao mesmo tempo com carga, e arredondar as costas para apanhar pesos do chão.'] },
+      { t: 'Quando a lombar agudiza', b: ['Na maioria das crises, manter-se ativa ajuda mais do que o repouso absoluto. Caminhadas curtas e a yoga suave aliviam a rigidez.', 'Durante a crise, troca o treino de carga por mobilidade. Ao voltar, começa com 50–70 % das cargas habituais.'], tip: 'No check-in diário, diz como está a lombar: a sugestão do dia adapta-se.' },
+      { t: 'Sinais de alarme', b: ['Pede avaliação se a dor irradiar abaixo do joelho com formigueiro ou perda de força, se houver alterações ao urinar ou na sensibilidade da zona genital, febre, perda de peso sem explicação, ou dor que piora de noite em repouso.', 'Nestes casos, não treines por cima da dor.'] },
+    ],
+    Q: [
+      { q: 'Para a lombar, o que interessa mais no core?', o: ['Força máxima numa só repetição', 'Resistência: conseguir manter a posição', 'Fazer muitos abdominais com flexão'], a: 1, e: 'Um core resistente segura a coluna durante todo o movimento.' },
+      { q: 'O que é o bracing?', o: ['Encolher a barriga para dentro', 'Contrair a barriga como para levar um toque, sem deixar de respirar', 'Arquear a lombar para fazer força'], a: 1, e: 'É uma contração à volta de toda a cintura, como um cinto.' },
+      { q: 'Numa crise de lombalgia sem sinais de alarme, o mais indicado é…', o: ['Repouso absoluto até passar', 'Manter-se ativa com movimento suave e cargas reduzidas', 'Treinar normalmente por cima da dor'], a: 1, e: 'Movimento suave costuma acelerar a recuperação.' },
+      { q: 'Qual destes é um sinal de alarme?', o: ['Rigidez de manhã que melhora com o movimento', 'Dor que irradia abaixo do joelho com perda de força', 'Dor muscular 2 dias depois do treino'], a: 1, e: 'Perda de força ou dor irradiada com défice pedem avaliação.' },
+    ] },
+  { id: 'cargas', n: 'Progressão de cargas', em: '📈', c: 'ac', desc: 'Como ficar mais forte sem te lesionares.',
+    L: [
+      { t: 'Sobrecarga progressiva', b: ['O músculo só se adapta se o desafio for aumentando aos poucos: mais carga, mais repetições, mais séries ou menos descanso.', 'Sem progressão, o corpo habitua-se e os resultados param. Com progressão a mais, aparecem lesões. O segredo é subir pouco e sempre.'] },
+      { t: 'Quando e quanto subir', b: ['Sobe quando fazes todas as séries e repetições com boa técnica e foi fácil.', 'Pernas e glúteos: +5 kg ou uma placa. Costas, peito, ombros e braços: +2,5 kg ou a placa mais pequena. Halteres: o par seguinte (+1 kg em cada mão).', 'Se o salto for grande, faz mais repetições com a carga antiga até conseguires pelo menos 8 com a nova.'], tip: 'Na lista do treino, a seta ↑ verde marca os exercícios prontos para subir.' },
+      { t: 'Semana de descarga', b: ['A cada 4 semanas, ou depois de uma semana pesada de plantões, faz uma semana mais leve: menos 20–30 % de carga, ou 2 séries em vez de 3.', 'É na recuperação que o músculo fica mais forte. Na semana seguinte voltas à carga normal e tentas subir.'] },
+    ],
+    Q: [
+      { q: 'Fizeste 3 × 12 no ponto (sobravam 1–2 repetições). Na próxima sessão…', o: ['Sobes 5 kg', 'Manténs a carga', 'Desces a carga'], a: 1, e: 'No ponto mantém-se. Sobe-se quando fica fácil.' },
+      { q: 'Quanto deves subir num exercício de braços?', o: ['+10 kg', '+2,5 kg ou a placa mais pequena', 'Sempre +5 kg'], a: 1, e: 'Músculos mais pequenos, saltos mais pequenos.' },
+      { q: 'Duas sessões seguidas difíceis no mesmo exercício. O que fazer?', o: ['Subir para ganhar força', 'Descer um passo e afinar a técnica', 'Abandonar o exercício'], a: 1, e: 'Recuar um passo permite voltar a progredir com boa técnica.' },
+      { q: 'A semana de descarga serve para…', o: ['Recuperar e voltar mais forte', 'Perder massa muscular', 'Compensar dias falhados'], a: 0, e: 'A adaptação acontece na recuperação.' },
+    ] },
+  { id: 'keto', n: 'Keto sem mistérios', em: '🥑', c: 'pch', desc: 'Cetose, gripe keto, proteína e armadilhas escondidas.',
+    L: [
+      { t: 'O que é a cetose', b: ['Com muito poucos hidratos (em geral menos de 20–50 g líquidos por dia), o fígado passa a produzir corpos cetónicos a partir da gordura e o corpo usa-os como combustível.', 'Hidratos líquidos são os hidratos totais menos a fibra. É esse número que a app conta no Diário.', 'Entrar em cetose leva normalmente 2 a 4 dias.'] },
+      { t: 'Gripe keto', b: ['Nos primeiros dias o corpo perde água e sódio. Pode haver cansaço, dor de cabeça, cãibras e tonturas.', 'Previne com sal na comida, caldo, água suficiente e alimentos com potássio e magnésio: abacate, folhas verdes, ginguba.', 'Costuma passar em uma a duas semanas.'] },
+      { t: 'Proteína e saciedade', b: ['A proteína protege o músculo enquanto emagreces e é o nutriente que mais sacia.', 'Põe proteína em todas as refeições: ovos, frango, carne, atum, sardinha, queijo, iogurte natural.', 'Keto não é comer gordura sem limite: a gordura entra para dar sabor e saciedade, não para encher calorias.'], tip: 'O anel verde do Diário mostra a proteína do dia.' },
+      { t: 'Armadilhas escondidas', b: ['Molhos prontos, ketchup, sumos “naturais”, iogurtes de aromas e algumas bebidas “zero” podem ter açúcar ou maltodextrina.', 'Produtos “sem açúcar” com maltitol sobem a glicemia e causam desconforto intestinal.', 'Lê o rótulo: hidratos por porção e lista de ingredientes.'] },
+    ],
+    Q: [
+      { q: 'Hidratos líquidos são…', o: ['Os hidratos das bebidas', 'Hidratos totais menos a fibra', 'Só o açúcar'], a: 1, e: 'A fibra não sobe a glicemia, por isso desconta-se.' },
+      { q: 'Cansaço e dor de cabeça nos primeiros dias de keto melhoram com…', o: ['Mais café', 'Sal, água e alimentos com potássio e magnésio', 'Mais hidratos ao jantar'], a: 1, e: 'A gripe keto é sobretudo perda de água e de minerais.' },
+      { q: 'Qual destes é o melhor reforço quando tens fome?', o: ['Sumo de laranja', 'Ovo cozido ou queijo', 'Bolachas integrais'], a: 1, e: 'Proteína sacia e não tira da cetose.' },
+      { q: 'Um chocolate “sem açúcar” com maltitol…', o: ['Não tem efeito nenhum', 'Pode subir a glicemia e causar desconforto', 'É ideal para keto'], a: 1, e: 'O maltitol é parcialmente absorvido como açúcar.' },
+    ] },
+  { id: 'jejum', n: 'Jejum intermitente', em: '⏳', c: 'lil', desc: 'Protocolos, o que quebra o jejum e quem deve evitar.',
+    L: [
+      { t: 'Os protocolos', b: ['14:10 e 16:8 são os mais fáceis para começar. 18:6 e 20:4 são mais exigentes. OMAD é uma refeição por dia.', 'O número da esquerda são as horas de jejum; o da direita, a janela para comer.', 'Com 2 refeições keto por dia, um 16:8 ou 17:7 acontece quase sem esforço.'], tip: 'Escolhe o programa no Diário: o temporizador arranca quando marcas a última refeição.' },
+      { t: 'O que quebra o jejum', b: ['Água, chá e café sem açúcar não quebram o jejum. Uma pitada de sal na água ajuda nos jejuns longos.', 'Leite, sumos, pastilhas com açúcar e caldos com gordura quebram ou atenuam o jejum.'] },
+      { t: 'Jejum, treino e cuidados', b: ['Treinar em jejum é seguro para a maioria, se te sentires bem. Se ficares tonta ou fraca, come antes do treino.', 'Na janela de alimentação, não saltes a proteína: é ela que segura o músculo.', 'Não é indicado na gravidez ou amamentação, com história de distúrbio alimentar, ou com diabetes tratada com insulina ou sulfonilureias sem acompanhamento.'] },
+    ],
+    Q: [
+      { q: 'No 16:8, quantas horas tens para comer?', o: ['16', '8', '24'], a: 1, e: '16 horas de jejum e 8 de janela.' },
+      { q: 'O que podes beber em jejum?', o: ['Sumo natural', 'Água, chá ou café sem açúcar', 'Café com leite'], a: 1, e: 'Sem calorias, o jejum mantém-se.' },
+      { q: 'Ficaste tonta a treinar em jejum. O melhor é…', o: ['Continuar e beber água', 'Comer antes do treino nesses dias', 'Aumentar o jejum'], a: 1, e: 'O jejum é uma ferramenta, não uma obrigação.' },
+    ] },
+  { id: 'sono', n: 'Sono, plantão e recuperação', em: '🌙', c: 'amb', desc: 'Dormir, plantões e dores musculares sem culpa.',
+    L: [
+      { t: 'Sono e fome', b: ['Uma noite mal dormida aumenta a grelina (fome) e baixa a leptina (saciedade). No dia seguinte apetece mais doce e mais hidratos.', 'Dormir 7 horas ou mais é uma das ferramentas mais subestimadas para emagrecer.'], tip: 'Regista o sono no check-in: a sugestão do dia adapta-se.' },
+      { t: 'Estratégia de plantão', b: ['Leva marmita: é no plantão que a dieta costuma escorregar. O plano tem um dia “marmita”.', 'Água sempre à mão e cafeína só na primeira metade do turno, se puderes dormir depois.', 'No dia seguinte, o descanso é o treino. Retomas no próximo dia do plano.'] },
+      { t: 'Recuperação muscular', b: ['As dores musculares de 1–2 dias depois do treino são normais, sobretudo no início.', 'Cada grupo muscular precisa de cerca de 48 horas para recuperar: por isso o plano alterna pernas e tronco.', 'Stress e cortisol altos retêm líquidos: a balança pode subir numa semana difícil mesmo a fazer tudo bem.'] },
+    ],
+    Q: [
+      { q: 'Dormir mal tende a…', o: ['Diminuir a fome', 'Aumentar a fome e a vontade de doce', 'Não mudar nada'], a: 1, e: 'Grelina sobe, leptina desce.' },
+      { q: 'No dia a seguir ao plantão…', o: ['Treino a dobrar para compensar', 'Descanso: retomas no próximo dia do plano', 'Jejum de 24 horas'], a: 1, e: 'Recuperar também é treinar.' },
+      { q: 'Dores musculares 2 dias depois do treino são…', o: ['Sinal de lesão', 'Normais, sobretudo no início', 'Sinal para deixar de treinar'], a: 1, e: 'É a adaptação do músculo a um estímulo novo.' },
+    ] },
+  { id: 'ciclo', n: 'Ciclo menstrual e treino', em: '🌸', c: 'ac', desc: 'Fases, retenção de líquidos e como ler a balança.',
+    L: [
+      { t: 'As fases', b: ['Fase menstrual (cerca dos dias 1–5), fase folicular (até à ovulação, perto do dia 14 num ciclo de 28) e fase lútea (da ovulação até à menstruação seguinte).', 'Muitas mulheres sentem mais energia na fase folicular e mais cansaço e fome na lútea, mas varia muito de pessoa para pessoa.'], tip: 'Liga o registo do ciclo em Mais → Ciclo para veres a fase de cada dia.' },
+      { t: 'Balança e retenção', b: ['Na fase lútea e nos primeiros dias da menstruação, é comum reter 0,5 a 2 kg de líquidos.', 'Para ver o progresso real, compara o peso com o do mesmo dia do ciclo anterior, ou olha para a tendência de várias semanas.'] },
+      { t: 'Treinar com o ciclo', b: ['Não há regra rígida: a evidência sobre treinar de forma diferente em cada fase é fraca. Ouve o corpo.', 'Com cólicas, movimento suave (caminhada, yoga) costuma aliviar. Com energia alta, aproveita para subir cargas.'] },
+    ],
+    Q: [
+      { q: 'Na fase lútea, a balança pode subir porque…', o: ['Ganhaste gordura', 'Há retenção de líquidos', 'A balança avariou'], a: 1, e: 'É água, e sai nos dias seguintes.' },
+      { q: 'Para comparar o peso de forma justa…', o: ['Compara com o mesmo dia do ciclo anterior', 'Pesa-te três vezes por dia', 'Nunca te peses'], a: 0, e: 'Assim a retenção do ciclo não engana.' },
+    ] },
+];
+
+/* =========================================================
+   v5: tema, níveis, ciclo, painel, menu, aprender
+   ========================================================= */
+/* ---------- tema ---------- */
+const ACCENTS = [['rosa', 'Rosa', '#C93670'], ['lavanda', 'Lavanda', '#6447D1'], ['menta', 'Menta', '#16875E'], ['pessego', 'Pêssego', '#C2541B'], ['ceu', 'Céu', '#2A6FC9']];
+const isDark = () => S.theme === 'dark' || ((!S.theme || S.theme === 'auto') && matchMedia('(prefers-color-scheme: dark)').matches);
+function applyTheme() {
+  const r = document.documentElement;
+  if (S.theme === 'dark' || S.theme === 'light') r.dataset.theme = S.theme; else r.removeAttribute('data-theme');
+  if (S.accent && S.accent !== 'rosa') r.dataset.accent = S.accent; else r.removeAttribute('data-accent');
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = isDark() ? '#150E18' : '#FBF6F8';
+}
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { applyTheme(); }); } catch (e) { }
+
+/* ---------- níveis e XP ---------- */
+const LEVELS = [[0, 'Primeiros passos'], [150, 'Aprendiz'], [400, 'Constante'], [800, 'Determinada'], [1400, 'Forte'], [2200, 'Poderosa'], [3300, 'Atleta'], [4700, 'Imparável'], [6500, 'Inspiradora'], [9000, 'Lenda']];
+const XPN = { treino: ['Treinos do plano', 50, 'por treino feito (80 % ou mais)'], sess: ['Sessões guiadas', 30, 'por sessão completa (10 se incompleta)'], agua: ['Água', 10, 'por dia na meta'], keto: ['Keto', 15, 'por dia com as 2 refeições'], jejum: ['Jejum', 15, 'por jejum de 14 h ou mais'], ck: ['Check-in', 5, 'por dia'], med: ['Medidas', 20, 'por registo'], foto: ['Fotos', 15, 'por foto de progresso'], cargas: ['Cargas', 25, 'por cada subida de carga'], aprender: ['Aprender', 20, 'por lição, 50 por quiz (+20 com 100 %)'], conq: ['Conquistas', 30, 'por conquista'] };
+function xpParts() {
+  const p = { treino: 0, sess: 0, agua: 0, keto: 0, jejum: 0, ck: 0, med: 0, foto: 0, cargas: 0, aprender: 0, conq: 0 };
+  Object.keys(S.log).forEach(d => { if (S.log[d].pct >= 0.8) p.treino += 50; });
+  Object.values(S.sess).forEach(a => a.forEach(e => { p.sess += e.id === 'timer' ? (e.full ? 15 : 5) : (e.full ? 30 : 10); }));
+  Object.keys(S.water).forEach(d => { if (S.water[d] >= waterGoal(d)) p.agua += 10; });
+  Object.keys(S.meals).forEach(d => { if (mealsDone(d)) p.keto += 15; });
+  S.fast.log.forEach(x => { if ((x.e - x.s) / 36e5 >= 14) p.jejum += 15; });
+  p.ck = Object.keys(S.ck).length * 5; p.med = S.med.length * 20; p.foto = (S.phN || 0) * 15;
+  Object.values(S.loads).forEach(h0 => { const h = h0.slice().sort((a, b) => a.d < b.d ? -1 : 1); for (let i = 1; i < h.length; i++) if (h[i].kg > h[i - 1].kg) p.cargas += 25; });
+  Object.values(S.learn || {}).forEach(m => { p.aprender += (m.l || []).length * 20 + (m.q != null ? 50 + (m.q >= 100 ? 20 : 0) : 0); });
+  p.conq = Object.keys(S.badges || {}).length * 30;
+  return p;
+}
+const xpTotal = () => Object.values(xpParts()).reduce((a, b) => a + b, 0);
+function lvlOf(xp) { let i = 0; while (i + 1 < LEVELS.length && xp >= LEVELS[i + 1][0]) i++; const cur = LEVELS[i][0], nx = LEVELS[i + 1] ? LEVELS[i + 1][0] : null; return { n: i + 1, name: LEVELS[i][1], xp, cur, nx, pct: nx ? (xp - cur) / (nx - cur) : 1 }; }
+function checkLevel() {
+  const L = lvlOf(xpTotal());
+  if (S.lvl == null) { S.lvl = L.n; save(); return; }
+  if (L.n > S.lvl) { S.lvl = L.n; save(); setTimeout(() => toast('🎉 Subiste para o nível ' + L.n + ': ' + L.name + '!'), 900); }
+}
+const lvlChip = () => { const L = lvlOf(xpTotal()); return `<button class="lvl" data-act="lvlSheet" aria-label="Nível ${L.n}"><span class="n">${L.n}</span>${L.name}<span class="pb"><i style="width:${Math.round(L.pct * 100)}%"></i></span></button>`; };
+function lvlSheet() {
+  const p = xpParts(), L = lvlOf(xpTotal()), mx = Math.max(1, ...Object.values(p));
+  openSheet(`<div class="shead"><div><p class="eyebrow">O teu nível</p><h2 style="margin:0">Nível ${L.n} · ${L.name}</h2></div><button class="x" data-act="closeSheet" aria-label="Fechar">${ic('x', 18)}</button></div>
+   <div style="display:flex;gap:16px;align-items:center">${ring(L.pct, 96, 10, 'var(--ac)', 'var(--sf2)', `<span style="font-size:24px;font-family:var(--fd)">${L.n}</span>`)}
+    <div><b style="font-size:22px;font-family:var(--fd)">${f0(L.xp)} XP</b><div class="note">${L.nx ? 'Faltam ' + f0(L.nx - L.xp) + ' XP para o nível ' + (L.n + 1) + ': ' + LEVELS[L.n][1] : 'Nível máximo. És uma lenda 👑'}</div></div></div>
+   <div class="sec">De onde vêm os teus pontos</div>
+   <div class="card flat">${Object.entries(p).map(([k, v]) => `<div class="xb"><span>${XPN[k][0]}</span><div class="bar"><i style="width:${v / mx * 100}%"></i></div><b>${f0(v)}</b></div>`).join('')}</div>
+   <div class="sec">Como ganhar XP</div>
+   <div class="card list flat">${Object.values(XPN).map(([n, v, d]) => `<div class="row"><div class="tx"><b>${n}</b><small>${d}</small></div><span class="tag ac">+${v}</span></div>`).join('')}</div>
+   <div class="sec">Os 10 níveis</div>
+   <div class="tags">${LEVELS.map(([x, n], i) => `<span class="tag ${i + 1 <= L.n ? 'ac' : ''}">${i + 1}. ${n} · ${f0(x)}</span>`).join('')}</div>`);
+}
+
+/* ---------- sequência de dias ativos ---------- */
+const activeDay = d => workoutPct(d) >= 0.8 || (S.water[d] || 0) >= waterGoal(d) || mealsDone(d) || S.pl[d] === '1';
+function streaks() {
+  const t = today(); let cur = 0, d = activeDay(t) ? t : addD(t, -1);
+  while (activeDay(d) && cur < 1000) { cur++; d = addD(d, -1); }
+  let best = 0, run = 0; const st = S.start < t ? S.start : t;
+  for (let x = st, n = 0; x <= t && n < 1200; x = addD(x, 1), n++) { if (activeDay(x)) { run++; best = Math.max(best, run); } else run = 0; }
+  return { cur, best: Math.max(best, cur) };
+}
+
+/* ---------- ciclo menstrual ---------- */
+function cycLen() { const s = (S.cyc.starts || []).slice().sort(); const ds = []; for (let i = 1; i < s.length; i++) { const g = diffD(s[i - 1], s[i]); if (g >= 21 && g <= 40) ds.push(g); } return ds.length ? Math.round(ds.slice(-6).reduce((a, b) => a + b, 0) / Math.min(6, ds.length)) : 28; }
+function cycInfo(date) {
+  if (!S.cyc || !S.cyc.on) return null;
+  const s = (S.cyc.starts || []).filter(x => x <= date).sort(); if (!s.length) return null;
+  const st = s[s.length - 1], len = cycLen(), per = S.cyc.per || 5, day = diffD(st, date) + 1, ov = len - 14;
+  let ph, pn, col;
+  if (day <= per) { ph = 'men'; pn = 'menstruação'; col = 'ac'; }
+  else if (day < ov - 1) { ph = 'fol'; pn = 'fase folicular'; col = 'mint'; }
+  else if (day <= ov + 1) { ph = 'ovu'; pn = 'ovulação'; col = 'amb'; }
+  else if (day <= len) { ph = 'lut'; pn = 'fase lútea'; col = 'lil'; }
+  else { ph = 'late'; pn = 'atraso de ' + (day - len) + ' dia' + (day - len > 1 ? 's' : ''); col = 'pch'; }
+  return { st, len, per, day, ov, ph, pn, col, next: addD(st, len) };
+}
+const isPeriod = d => (S.cyc && S.cyc.on) ? (S.cyc.starts || []).some(s => s <= d && diffD(s, d) < (S.cyc.per || 5)) : false;
+const CYC_TIP = { men: 'Menstruação: com cólicas, movimento suave alivia. A balança pode estar mais alta por retenção.', fol: 'Fase folicular: costuma ser a fase com mais energia. Bom momento para subir cargas.', ovu: 'Ovulação: energia ainda alta. Aquece bem as articulações.', lut: 'Fase lútea: mais fome e retenção de líquidos são normais. A balança pode subir 0,5–2 kg sem ser gordura.', late: 'Atraso no ciclo. Se for invulgar para ti, vale a pena perceber porquê.' };
+function cycHtml() {
+  const t = today(), ci = cycInfo(t), on = S.cyc && S.cyc.on, starts = (S.cyc.starts || []).slice().sort().reverse();
+  let body = `<div class="card" style="display:flex;align-items:center;gap:12px"><div class="ic">${ic('cal', 18)}</div><div style="flex:1"><b>Registar o meu ciclo</b><div class="note">Mostra a fase de cada dia e explica as oscilações da balança. Fica só neste telemóvel.</div></div><label class="sw"><input type="checkbox" data-act="cycOn" ${on ? 'checked' : ''}><span></span></label></div>`;
+  if (!on) return body;
+  if (ci) {
+    const segs = [['ac', ci.per], ['mint', Math.max(0, ci.ov - 2 - ci.per)], ['amb', 3], ['lil', Math.max(0, ci.len - ci.ov - 1)]], tot2 = segs.reduce((a, s) => a + s[1], 0), pos = Math.min(ci.day, ci.len) / tot2 * 100;
+    body += `<div class="card"><p class="eyebrow">Hoje · dia ${ci.day} de ~${ci.len}</p><h2 style="margin:0">${ci.pn[0].toUpperCase() + ci.pn.slice(1)}</h2>
+      <div class="cycbar">${segs.map(([c, n]) => `<i style="width:${n / tot2 * 100}%;background:var(--${c}p)"></i>`).join('')}<div class="mk" style="left:calc(${pos}% - 2px)"><span>hoje</span></div></div>
+      <div class="tags"><span class="tag ac">menstruação</span><span class="tag mint">folicular</span><span class="tag amb">ovulação</span><span class="tag lil">lútea</span></div>
+      <div class="call ${ci.col === 'ac' ? 'ac' : ci.col}" style="margin-top:12px">${ic('info', 18)}<div>${CYC_TIP[ci.ph]}</div></div>
+      <p class="note" style="margin:10px 0 0">Próxima menstruação prevista: <b>${dfull(ci.next)}</b>. A previsão melhora com mais registos.</p></div>`;
+  }
+  body += `<button class="btn w" data-act="cycStart">${ic('plus', 18)} A menstruação começou hoje</button>
+   <div class="card" style="margin-top:12px"><label class="f" style="margin-top:0">Ou regista uma data anterior</label><div style="display:flex;gap:8px"><input class="in" type="date" id="cycd" max="${t}"><button class="btn sm" data-act="cycAdd">Juntar</button></div>
+    <label class="f">Duração habitual da menstruação</label><div class="opt">${[3, 4, 5, 6, 7].map(n => `<button class="${(S.cyc.per || 5) === n ? 'on' : ''}" data-act="cycPer" data-v="${n}">${n} dias</button>`).join('')}</div></div>
+   ${starts.length ? `<div class="sec">Registos · ciclo médio de ${cycLen()} dias</div><div class="card list">${starts.map((s, i) => `<div class="row"><div class="tx"><b>${dfull(s)}</b><small>${starts[i + 1] ? diffD(starts[i + 1], s) + ' dias de ciclo' : 'primeiro registo'}</small></div><button class="x" style="width:30px;height:30px" data-act="cycDel" data-d="${s}" aria-label="Apagar">${ic('x', 14)}</button></div>`).join('')}</div>` : ''}
+   <button class="card flat" style="display:flex;gap:12px;align-items:center;width:100%;text-align:left" data-act="lesson" data-m="ciclo" data-i="0"><div class="ic">${ic('book', 18)}</div><div style="flex:1"><b>Ciclo menstrual e treino</b><div class="note">3 lições curtas e um quiz em Aprender.</div></div><span class="chev">${ic('chev', 18)}</span></button>`;
+  return body;
+}
+
+/* ---------- aprender ---------- */
+const lp = id => (S.learn = S.learn || {})[id] = S.learn[id] || { l: [], q: null };
+function nextLesson() { for (const m of MODS) { if (m.id === 'ciclo' && !(S.cyc && S.cyc.on)) continue; const p = (S.learn || {})[m.id] || { l: [] }; const i = m.L.findIndex((_, k) => !p.l.includes(k)); if (i >= 0) return { m, i }; if ((p.q == null)) return { m, i: -1 }; } return null; }
+function modCard(m) {
+  const p = (S.learn || {})[m.id] || { l: [], q: null }, done = p.l.length, tot2 = m.L.length + 1, prog = (done + (p.q != null ? 1 : 0)) / tot2;
+  return `<button class="mod" style="background:var(--${m.c}2)" data-act="mod" data-m="${m.id}"><span class="me">${m.em}</span><span style="flex:1;min-width:0"><b>${m.n}</b><small>${m.desc}</small><span class="bar" style="display:block"><i style="width:${prog * 100}%;background:var(--${m.c})"></i></span><small style="margin:6px 0 0;color:var(--${m.c}d);font-weight:700">${done}/${m.L.length} lições${p.q != null ? ' · quiz ' + p.q + ' %' : ''}</small></span></button>`;
+}
+function learnHtml() {
+  const nl = nextLesson(), all = MODS.reduce((a, m) => a + m.L.length, 0), done = MODS.reduce((a, m) => a + ((S.learn || {})[m.id] || { l: [] }).l.length, 0);
+  if (UI.mod) {
+    const m = MODS.find(x => x.id === UI.mod), p = (S.learn || {})[m.id] || { l: [], q: null };
+    return `<button class="back" data-act="modBack">${ic('left', 18)} Aprender</button>` + head(m.L.length + ' lições · quiz final', m.em + ' ' + m.n) +
+      `<p class="note" style="margin:-6px 2px 14px">${m.desc}</p><div class="card list">${m.L.map((l, i) => `<button class="row ${p.l.includes(i) ? 'done' : ''}" data-act="lesson" data-m="${m.id}" data-i="${i}"><div class="ic" style="background:var(--${m.c}2);color:var(--${m.c}d)">${p.l.includes(i) ? ic('check', 18, 3) : '<b>' + (i + 1) + '</b>'}</div><div class="tx"><b>${l.t}</b><small>${p.l.includes(i) ? 'lida ✓' : '1–2 min · +20 XP'}</small></div><span class="chev">${ic('chev', 18)}</span></button>`).join('')}
+       <button class="row" data-act="quiz" data-m="${m.id}"><div class="ic" style="background:var(--${m.c}p);color:var(--${m.c}d)">${ic('target', 18)}</div><div class="tx"><b>Quiz: ${m.Q.length} perguntas</b><small>${p.q != null ? 'melhor resultado: ' + p.q + ' %' : '+50 XP, +20 com 100 %'}</small></div><span class="chev">${ic('chev', 18)}</span></button></div>`;
+  }
+  return head(done + ' de ' + all + ' lições lidas', 'Aprender') +
+    (nl ? `<div class="hero" style="min-height:0">${heroArt()}<div class="lbl">Continua de onde ficaste</div><h2>${nl.i >= 0 ? nl.m.L[nl.i].t : 'Quiz: ' + nl.m.n}</h2><div class="meta">${nl.m.em} ${nl.m.n}${nl.i >= 0 ? ' · lição ' + (nl.i + 1) + ' de ' + nl.m.L.length : ''}</div><div class="hb"><button class="btn" ${nl.i >= 0 ? `data-act="lesson" data-m="${nl.m.id}" data-i="${nl.i}"` : `data-act="quiz" data-m="${nl.m.id}"`}>${ic('play', 18)} ${nl.i >= 0 ? 'Ler agora' : 'Fazer o quiz'}</button></div></div>` : `<div class="call">${ic('medal', 18)}<div><b>Leste tudo e fizeste todos os quizzes.</b> Podes repetir os quizzes para chegar aos 100 %.</div></div>`) +
+    `<div class="sec">Módulos</div><div class="mods">${MODS.map(modCard).join('')}</div>`;
+}
+function lessonSheet(mid, i) {
+  const m = MODS.find(x => x.id === mid), l = m.L[i], p = lp(mid), read = p.l.includes(i);
+  openSheet(`<div class="shead"><div><p class="eyebrow">${m.em} ${m.n} · lição ${i + 1} de ${m.L.length}</p><h2 style="margin:0">${l.t}</h2></div><button class="x" data-act="closeSheet" aria-label="Fechar">${ic('x', 18)}</button></div>
+   <div class="lesson">${l.b.map(x => `<p>${x}</p>`).join('')}</div>
+   ${l.tip ? `<div class="call ${m.c === 'ac' ? 'ac' : m.c}" style="margin-bottom:14px">${ic('phone', 18)}<div><b>Na app.</b> ${l.tip}</div></div>` : ''}
+   <div class="btns">${read ? '' : `<button class="btn" data-act="lessonDone" data-m="${mid}" data-i="${i}">${ic('check', 18, 3)} Li · +20 XP</button>`}${i + 1 < m.L.length ? `<button class="btn ${read ? '' : 'ghost'}" data-act="lesson" data-m="${mid}" data-i="${i + 1}">Seguinte ${ic('chev', 16)}</button>` : `<button class="btn ${read ? '' : 'ghost'}" data-act="quiz" data-m="${mid}">${ic('target', 16)} Fazer o quiz</button>`}</div>`);
+}
+function quizSheet() {
+  const z = UI.qz, m = MODS.find(x => x.id === z.m);
+  if (z.i >= m.Q.length) {
+    const pct = Math.round(z.ok / m.Q.length * 100);
+    openSheet(`<div class="shead"><div><p class="eyebrow">${m.em} ${m.n}</p><h2 style="margin:0">Resultado</h2></div><button class="x" data-act="closeSheet" aria-label="Fechar">${ic('x', 18)}</button></div>
+     <div style="text-align:center;padding:10px 0 18px">${'<div style="display:flex;justify-content:center">' + ring(pct / 100, 130, 12, pct === 100 ? 'var(--mint)' : 'var(--ac)', 'var(--sf2)', `<span style="font-size:30px;font-family:var(--fd)">${pct} %</span>`) + '</div>'}
+      <h2 style="margin:14px 0 4px">${pct === 100 ? 'Perfeito! 🎉' : pct >= 70 ? 'Muito bem!' : 'Quase lá!'}</h2><p class="note">${z.ok} de ${m.Q.length} certas${pct === 100 ? ' · +70 XP' : ' · +50 XP no primeiro quiz'}</p></div>
+     <div class="btns"><button class="btn ghost" data-act="quiz" data-m="${m.id}">Repetir</button><button class="btn" data-act="closeSheet">Fechar</button></div>`);
+    return;
+  }
+  const q = m.Q[z.i], ans = z.pick != null;
+  openSheet(`<div class="shead"><div><p class="eyebrow">Quiz · pergunta ${z.i + 1} de ${m.Q.length}</p><h2 style="margin:0">${q.q}</h2></div><button class="x" data-act="closeSheet" aria-label="Fechar">${ic('x', 18)}</button></div>
+   <div class="bar" style="margin-bottom:14px"><i style="width:${z.i / m.Q.length * 100}%"></i></div>
+   <div class="qo">${q.o.map((o, k) => `<button class="${ans ? (k === q.a ? 'ok' : k === z.pick ? 'no' : '') : ''}" data-act="qpick" data-k="${k}" ${ans ? 'disabled' : ''}>${o}</button>`).join('')}</div>
+   ${ans ? `<div class="call ${z.pick === q.a ? '' : 'amb'}" style="margin-top:14px">${ic(z.pick === q.a ? 'check' : 'info', 18)}<div><b>${z.pick === q.a ? 'Certo!' : 'Não é bem assim.'}</b> ${q.e}</div></div><button class="btn w" style="margin-top:14px" data-act="qnext">${z.i + 1 < m.Q.length ? 'Seguinte' : 'Ver resultado'}</button>` : ''}`);
+}
+
+/* ---------- painel (Hoje) ---------- */
+function heroArt() {
+  return `<svg class="hero-art" viewBox="0 0 170 230" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+   <g class="f1"><rect x="60" y="-60" width="150" height="150" rx="36" transform="rotate(28 135 15)" fill="#FFB8CF"/></g>
+   <g class="f2"><rect x="80" y="98" width="96" height="96" rx="24" transform="rotate(28 128 146)" fill="#CBB8FF"/></g>
+   <g class="f3"><rect x="20" y="170" width="86" height="86" rx="22" transform="rotate(28 63 213)" fill="#FFCFAE"/></g>
+   <circle cx="36" cy="44" r="7" fill="#B6EBD2"/><circle cx="152" cy="214" r="5" fill="#FFE49A"/>
+   <path class="ecg" d="M0 122 H30 l8 -18 l10 38 l12 -58 l10 46 l7 -9 H175" fill="none" stroke="#FFF1C4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+const bA = (o, cls = '') => `<button class="btn ${cls}" data-act="${o.act}"${o.tab ? ` data-tab="${o.tab}"` : ''}${o.sub ? ` data-sub="${o.sub}"` : ''}${o.id ? ` data-id="${o.id}"` : ''}>${o.ic ? ic(o.ic, 18) + ' ' : ''}${o.l}</button>`;
+function recommend() {
+  const t = today(), c = S.ck[t] || {}, pl = S.pl[t] === '1', yPl = S.pl[addD(t, -1)] === '1', dd = DAYS[S.day], tt = dayTotals();
+  const done = (S.log[t] ? S.log[t].pct : 0) >= 0.8, sDone = sessOf(t).some(e => e.full);
+  const ups = dd.ids.filter(id => { const sg = suggest(id); return sg && sg.dir === 'up'; }).length;
+  const plan = { act: 'go', tab: 'treino', sub: 'plano' }, ci = cycInfo(t);
+  if (pl) return { eb: 'Dia de plantão', t: 'Descansa e hidrata-te', lead: 'Sem treino hoje nem amanhã, e a meta de água sobe 0,5 L. Se tiveres 5 minutos, a pausa de plantão solta o pescoço e a lombar.', p: { l: 'Pausa de plantão', ic: 'play', act: 'sess', id: 'plantao' }, s: { l: 'Registar água', act: 'go', tab: 'comer', sub: 'diario' } };
+  if (done || sDone) return { eb: 'Treino feito ✓', t: 'Arrasaste hoje!', lead: f0(kcalDate(t)) + ' kcal gastas a treinar. Fecha com 5 minutos de alongamentos e não te esqueças da proteína e da água.', p: { l: 'Alongar 5 min', ic: 'play', act: 'sess', id: 'pos' }, s: { l: 'Ver o treino', ...plan }, ring: [tt.n, tt.t] };
+  if (c.dor >= 2) return { eb: 'A tua lombar pediu calma', t: 'Yoga para a lombar', lead: 'Hoje troca as cargas por movimento suave. Se amanhã estiver melhor, voltas ao plano.', p: { l: 'Começar a yoga', ic: 'play', act: 'sess', id: 'yogaL' }, s: { l: 'Ver o plano', ...plan } };
+  if (yPl && !tt.n) return { eb: 'Dia de recuperação', t: 'Volta com calma', lead: 'Ontem foi plantão. Se dormiste bem, faz o ' + dayLbl() + ' com as cargas mantidas. Se não, uma sessão curta já conta.', p: { l: 'Ver o ' + dayLbl(), ic: 'play', ...plan }, s: { l: 'Yoga para acordar', act: 'sess', id: 'yogaM' } };
+  let lead = tt.t + ' exercícios · cerca de ' + f0(tt.mAll + tt.t * 3) + ' min.';
+  if (c.sono === 0 || c.en === 0) lead += ' Dormiste pouco ou estás cansada: faz 2 séries em vez de 3 e deixa os recordes para outro dia.';
+  else if (ci && ci.ph === 'men' && c.en !== 2) lead += ' Estás menstruada: se houver cólicas, baixa o ritmo sem culpa.';
+  else if (ups) lead += ' ' + ups + (ups > 1 ? ' cargas prontas' : ' carga pronta') + ' para subir ↑';
+  else if (c.dor === 1) lead += ' Lombar ligeira: aquece bem e mantém as cargas.';
+  return { eb: (tt.n ? 'A meio · ' : 'Treino de hoje · ') + PH_NAMES[S.ph].split(' · ')[0], t: (dd.free ? '' : 'Dia ' + (S.day + 1) + ' · ') + dd.t, lead, p: { l: tt.n ? 'Continuar treino' : 'Começar treino', ic: 'play', ...plan }, s: { l: 'Escolher outro', act: 'go', tab: 'treino', sub: 'exp' }, ring: [tt.n, tt.t] };
+}
+function balanceHtml() {
+  const t = today(), mon = monOf(t), n = diffD(mon, t) + 1; let tr = 0, ag = 0, ke = 0, je = 0, so = 0, soN = 0;
+  for (let i = 0; i < n; i++) { const d = addD(mon, i); if (workoutPct(d) >= 0.8) tr++; if ((S.water[d] || 0) >= waterGoal(d)) ag++; if (mealsDone(d)) ke++; if (fastHours(d) >= S.fast.goal - 0.05) je++; const c = S.ck[d]; if (c && c.sono != null) { soN++; if (c.sono === 2) so++; } }
+  const R = [['Treinos', tr, 4, 'ac'], ['Água na meta', ag, n, 'sky'], ['Dias keto', ke, n, 'pch'], ['Jejum na meta', je, n, 'lil'], ['Sono 7 h ou mais', so, soN, 'mint']];
+  return `<div class="card"><h3>Equilíbrio da semana</h3><p class="note" style="margin:2px 0 6px">De segunda até hoje (${n} dia${n > 1 ? 's' : ''}).</p>${R.map(([l, v, mx, c]) => `<div class="xb"><span>${l}</span><div class="bar"><i style="width:${mx ? Math.min(100, v / mx * 100) : 0}%;background:var(--${c})"></i></div><b>${mx ? v + '/' + mx : '—'}</b></div>`).join('')}${soN ? '' : '<p class="note" style="margin:6px 0 0">O sono aparece quando o registares no check-in.</p>'}</div>`;
+}
+function evoHtml() {
+  const pts = medS('p').slice(-10);
+  if (pts.length < 2) return `<div class="card"><h3>Evolução do peso</h3><p class="note" style="margin:6px 0 14px">${pts.length ? 'Tens 1 registo. Com 2 ou mais aparece aqui a tua linha.' : 'Regista o teu peso 1× por semana e vê a linha a descer.'}</p><button class="btn sm soft" data-act="go" data-tab="prog" data-sub="medidas">${ic('ruler', 16)} Registar medidas</button></div>`;
+  const a = pts[0], b = pts[pts.length - 1], df = b.v - a.v;
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><h3>Evolução do peso</h3><span class="tag ${df <= 0 ? 'mint' : 'amb'}">${df > 0 ? '+' : ''}${f1(df)} kg</span></div>${svgLine(pts, 'var(--lil)')}<p class="note" style="margin:4px 0 0">Desde ${dfull(a.d)}. Oscilações de 1–2 kg entre semanas são normais.</p></div>`;
+}
+function badgesMini() {
+  const st = stats(), got = BADGES.filter(b => (S.badges || {})[b[0]]).sort((a, b) => S.badges[b[0]] < S.badges[a[0]] ? -1 : 1).slice(0, 2);
+  const nxt = BADGES.filter(b => !(S.badges || {})[b[0]]).map(b => { const [c, g] = b[4](st); return [b, c / g, c, g]; }).sort((a, b) => b[1] - a[1]).slice(0, 4 - got.length);
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Conquistas</h3><button class="link" data-act="go" data-tab="mais" data-sub="conq">${Object.keys(S.badges || {}).length} de ${BADGES.length}</button></div>
+   <div class="bdrow" style="margin-top:12px">${got.map(b => `<div class="bd1 on"><div class="em">${b[1]}</div><b>${b[2]}</b></div>`).join('')}${nxt.map(([b, , c, g]) => `<div class="bd1"><div class="em">${b[1]}</div><b>${b[2]}</b><small>${f0(Math.min(c, g))}/${g}</small></div>`).join('')}</div></div>`;
+}
+function learnMini() {
+  const nl = nextLesson();
+  if (!nl) return `<div class="card"><h3>Aprender</h3><p class="note">Leste todos os módulos. 👏</p><button class="btn sm soft" data-act="go" data-tab="mais" data-sub="aprender">Rever módulos</button></div>`;
+  return `<div class="card" style="background:var(--${nl.m.c}2);border-color:transparent"><p class="eyebrow" style="color:var(--${nl.m.c}d)">Aprender · ${nl.m.em} ${nl.m.n}</p><h3>${nl.i >= 0 ? nl.m.L[nl.i].t : 'Quiz do módulo'}</h3><p class="note" style="margin:4px 0 12px">${nl.i >= 0 ? 'Lição ' + (nl.i + 1) + ' de ' + nl.m.L.length + ' · 1–2 min · +20 XP' : nl.m.Q.length + ' perguntas · +50 XP'}</p><button class="btn sm" ${nl.i >= 0 ? `data-act="lesson" data-m="${nl.m.id}" data-i="${nl.i}"` : `data-act="quiz" data-m="${nl.m.id}"`}>${ic('book', 16)} ${nl.i >= 0 ? 'Ler agora' : 'Fazer o quiz'}</button></div>`;
+}
+function weekCard() {
+  const t = today(), mon = monOf(t), L = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']; let n = 0, k = 0;
+  for (let i = 0; i < 7; i++) { const d = addD(mon, i); if (workoutPct(d) >= 0.8) n++; k += kcalDate(d); }
+  return `<div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px"><h3>Esta semana</h3><span class="note" style="font-weight:700">${n}/4 treinos${k ? ' · ' + f0(k) + ' kcal' : ''}</span></div><div class="week">${L.map((l, i) => { const d = addD(mon, i), p = workoutPct(d), dn = p >= 0.8, pl = S.pl[d] === '1'; return `<div class="wd ${dn ? 'done' : pl ? 'rest' : p > 0 ? 'part' : ''} ${d === t ? 'today' : ''} ${d > t ? 'fut' : ''}">${l}<i>${dn ? ic('check', 16, 3) : pl ? ic('moon', 14, 2.4) : +d.slice(8)}</i></div>`; }).join('')}</div></div>`;
+}
+function renderHoje() {
+  const t = today(), d = new Date(), c = calc(), rc = recommend(), ci = cycInfo(t);
+  const wg = waterGoal(t), wc = S.water[t] || 0, e = dayEat(t), tg = kcalTarget(), sk = streaks();
+  const kd = (d.getDay() + 6) % 7, meal = KETO[kd], mdone = S.meals[t] || {}, doce = S.doce[t] != null ? DOCES[S.doce[t]] : null;
+  const w = [...S.med].filter(x => x.p).sort((a, b) => a.d < b.d ? -1 : 1), lw = w[w.length - 1], fw = w[0], pl = S.pl[t] === '1';
+  $('s-hoje').innerHTML = `<header class="ah"><div><p class="eyebrow">${WD[d.getDay()]}, ${d.getDate()} de ${MO[d.getMonth()]}</p><h1>Olá${S.perfil.nome ? ', ' + esc(S.perfil.nome) : ''} ✨</h1>${lvlChip()}${ci ? `<button class="cyc" data-act="go" data-tab="mais" data-sub="ciclo">${ic('cal', 14)} dia ${ci.day} · ${ci.pn}</button>` : ''}</div><button class="avatar" data-act="profile" aria-label="Perfil"><img src="icons/avatar.jpg" alt=""></button></header>` +
+    (!c.ok ? `<div class="card" style="border-color:var(--ac)"><h3>Vamos começar</h3><p class="note" style="margin:6px 0 12px">Preenche o teu peso, altura e idade para eu calcular as calorias, a água e o gasto dos treinos.</p><button class="btn w" data-act="profile">${ic('user', 18)} Preencher perfil</button></div>` : '') +
+    (deferredInstall && !isStandalone() ? `<div class="card flat" style="display:flex;gap:12px;align-items:center"><div class="ic" style="background:var(--lil2);color:var(--lild)">${ic('phone')}</div><div style="flex:1"><b>Instala a app</b><div class="note">Fica no ecrã principal e funciona sem internet.</div></div><button class="btn sm lil" data-act="install">Instalar</button></div>` : '') +
+    `<section class="hero">${heroArt()}<div class="lbl">${rc.eb}</div><h2>${esc(rc.t)}</h2><div class="meta">${rc.lead}</div>${rc.ring ? `<div class="ringwrap">${ring(rc.ring[1] ? rc.ring[0] / rc.ring[1] : 0, 64, 6, '#fff', 'rgba(255,255,255,.22)', `<span style="color:#fff;font-size:14px">${rc.ring[0]}/${rc.ring[1]}</span>`)}</div>` : ''}<div class="hb">${bA(rc.p)}${bA(rc.s, 'gh')}</div></section>` +
+    checkinHtml() +
+    `<div class="tiles">
+      <button class="tile t-sky" data-act="water" data-ml="250"><span class="tl">Água ${ring(wc / wg, 30, 4, 'var(--sky)', 'color-mix(in srgb,var(--sf) 70%,transparent)')}</span><span><b>${fL(wc)}</b><span class="u">/ ${fL(wg)} L</span><span class="s">toca para +250 ml</span></span></button>
+      <button class="tile t-pch" data-act="go" data-tab="comer" data-sub="diario"><span class="tl">Calorias ${ic('flame', 18)}</span><span><b>${e.k ? f0(e.k) : '—'}</b><span class="u">${tg ? '/ ' + f0(tg) : 'kcal'}</span><span class="s">proteína ${f0(e.p)} g · HC ${f0(e.c)} g</span></span></button>
+      <button class="tile t-amb" data-act="lvlSheet"><span class="tl">Sequência ${ic('spark', 18)}</span><span><b>${sk.cur}</b><span class="u">${sk.cur === 1 ? 'dia' : 'dias'}</span><span class="s">recorde: ${sk.best} · dias ativos</span></span></button>
+      <button class="tile t-lil" data-act="go" data-tab="prog" data-sub="medidas"><span class="tl">Peso ${ic('scale', 18)}</span><span><b>${lw ? f1(lw.p) : (c.w ? f1(c.w) : '—')}</b><span class="u">kg</span><span class="s">${lw && fw && lw !== fw ? (lw.p - fw.p > 0 ? '+' : '') + f1(lw.p - fw.p) + ' kg desde ' + dm(fw.d) : 'regista as medidas'}</span></span></button>
+    </div>` + weekCard() +
+    `<div class="duo">${evoHtml()}${balanceHtml()}</div>
+    <div class="sec"><span>Refeições de hoje${fastLbl() ? ' <span style="text-transform:none;letter-spacing:0;font-weight:700;color:var(--lild)">· ' + fastLbl() + '</span>' : ''}</span> <button class="link" data-act="go" data-tab="comer" data-sub="diario">Diário</button></div>
+    <div class="card list">
+      ${meal.m.map((m, i) => `<div class="row ${mdone[i] ? 'done' : ''}"><div class="ic" style="background:var(--pch2);color:var(--pchd)">${ic('food', 18)}</div><div class="tx"><b>${esc(m.t)}</b><small>${m.h} · ${f0(tot(m.it).k)} kcal</small></div><button class="ck ${mdone[i] ? 'on' : ''}" data-act="meal" data-i="${i}" aria-label="Feita">${ic('check', 18, 3)}</button></div>`).join('')}
+      <button class="row" data-act="go" data-tab="comer" data-sub="doces"><div class="ic" style="background:var(--amb2);color:var(--ambd)">${ic('cake', 18)}</div><div class="tx"><b>${doce ? esc(doce.n) : 'Um doce keto?'}</b><small>${doce ? f0(tot(doce.it).k) + ' kcal · registado hoje' : '6 receitas para o teu sweet tooth'}</small></div><span class="chev">${ic('chev', 18)}</span></button>
+    </div>
+    <div class="duo">${learnMini()}${badgesMini()}</div>
+    <div class="card" style="display:flex;align-items:center;gap:12px"><div class="ic" style="background:var(--lil2);color:var(--lild)">${ic('moon', 18)}</div><div style="flex:1"><b>Hoje estou de plantão</b><div class="note">Pausa o treino, +0,5 L de água e conta como descanso no desafio.</div></div><label class="sw"><input type="checkbox" data-act="plantao" ${pl ? 'checked' : ''}><span></span></label></div>
+    <div class="call lil">${ic('spark', 18)}<div><b>Dica do dia.</b> ${TIPS[diffD('2026-01-01', t) % TIPS.length]}</div></div>`;
+}
+
+/* ---------- barra lateral e menu Mais ---------- */
+const SIDE = [['hoje', '', 'home', 'Hoje'], ['treino', '', 'dumb', 'Treino'], ['comer', '', 'food', 'Comer'], ['prog', '', 'chart', 'Progresso'], ['mais', 'aprender', 'book', 'Aprender'], ['mais', 'desafio', 'target', 'Desafio'], ['mais', 'conq', 'medal', 'Conquistas'], ['mais', 'menu', 'grid', 'Mais']];
+function renderSide() {
+  const L = lvlOf(xpTotal()), el = $('side'); if (!el) return;
+  el.innerHTML = `<div class="brand"><img src="icons/avatar.jpg" alt=""><div><b>Push It</b><small>${S.perfil.nome ? esc(S.perfil.nome) : 'o teu treino'}</small></div></div>` +
+    SIDE.map(([t2, sub, i, l]) => { const on = tab === t2 && (!sub || UI.mais === sub || (sub === 'menu' && !['aprender', 'desafio', 'conq'].includes(UI.mais))); return `<button class="slink ${on ? 'on' : ''}" data-act="side" data-tab="${t2}" data-sub="${sub}">${ic(i, 20)}${l}</button>`; }).join('') +
+    `<div class="foot">${lvlChip()}<p class="note" style="margin:8px 0 0">${f0(L.xp)} XP${L.nx ? ' · faltam ' + f0(L.nx - L.xp) : ''}</p></div>`;
+}
+function menuHtml() {
+  const L = lvlOf(xpTotal()), nl = nextLesson(), ci = cycInfo(today());
+  const T = [['aprender', 'book', 'Aprender', nl ? 'Próxima: ' + (nl.i >= 0 ? nl.m.L[nl.i].t : 'quiz de ' + nl.m.n) : 'tudo lido ✓', 'lil'], ['desafio', 'target', 'Desafio', S.chal ? esc(S.chal.name) : 'ao estilo 75 Hard', 'amb'], ['conq', 'medal', 'Conquistas', Object.keys(S.badges || {}).length + ' de ' + BADGES.length, 'ac'], ['nivel', 'spark', 'Nível ' + L.n, L.name + ' · ' + f0(L.xp) + ' XP', 'pch'], ['ciclo', 'cal', 'Ciclo', ci ? 'dia ' + ci.day + ' · ' + ci.pn : 'registo opcional', 'ac'], ['progredir', 'up', 'Subir cargas', 'quando, quanto e como', 'mint'], ['regras', 'spine', 'Regras de ouro', 'treino e lombar', 'sky'], ['aparencia', 'wand', 'Aparência', 'tema e cor de destaque', 'lil']];
+  return head('Tudo o resto', 'Mais') + `<div class="mg">${T.map(([k, i, a, b, c]) => `<button class="m-${c}" data-act="${k === 'nivel' ? 'lvlSheet' : 'seg'}" data-k="mais" data-v="${k}"><span class="mi">${ic(i, 19)}</span><span><b>${a}</b><small>${b}</small></span></button>`).join('')}</div>
+   <div class="card list">${[['perfil', 'user', 'Perfil e dados', 'peso, altura, idade, atividade'], ['instalar', 'phone', 'Instalar a app', isStandalone() ? 'já está instalada ✓' : 'ícone no ecrã e funciona offline'], ['backup', 'down', 'Cópia de segurança', 'exportar ou importar os teus dados'], ['sobre', 'info', 'Sobre', 'fotos, fontes e avisos']].map(([k, i, a, b]) => `<button class="row" data-act="${k === 'perfil' ? 'profile' : k === 'instalar' ? 'installInfo' : 'seg'}" data-k="mais" data-v="${k}"><div class="ic">${ic(i, 18)}</div><div class="tx"><b>${a}</b><small>${b}</small></div><span class="chev">${ic('chev', 18)}</span></button>`).join('')}</div>`;
+}
+function aparenciaHtml() {
+  const th = S.theme || 'auto', ac = S.accent || 'rosa';
+  return `<div class="card"><h3>Tema</h3><p class="note" style="margin:2px 0 10px">O automático segue o modo claro ou escuro do telemóvel.</p><div class="opt">${[['auto', 'Automático'], ['light', 'Claro'], ['dark', 'Escuro']].map(([v, l]) => `<button class="${th === v ? 'on' : ''}" data-act="theme" data-v="${v}">${l}</button>`).join('')}</div></div>
+   <div class="card"><h3>Cor de destaque</h3><p class="note" style="margin:2px 0 12px">Muda os botões, os separadores e os realces. As outras cores continuam a identificar cada área.</p><div class="swatches">${ACCENTS.map(([v, l, h]) => `<button class="swatch ${ac === v ? 'on' : ''}" style="background:${h}" data-act="accent" data-v="${v}" aria-label="${l}" title="${l}">${ac === v ? ic('check', 20, 3) : ''}</button>`).join('')}</div></div>
+   <div class="sec">A paleta da app</div>
+   <div class="tiles">${[['ac', 'Treino'], ['sky', 'Água'], ['pch', 'Comida'], ['lil', 'Jejum e progresso'], ['mint', 'Saúde e mobilidade'], ['amb', 'Sequências e doces']].map(([c, l]) => `<div class="tile t-${c}" style="min-height:84px"><span class="tl">${l}</span><span style="display:flex;gap:6px"><i style="width:22px;height:22px;border-radius:7px;background:var(--${c})"></i><i style="width:22px;height:22px;border-radius:7px;background:var(--${c}p)"></i><i style="width:22px;height:22px;border-radius:7px;background:var(--${c}d)"></i></span></div>`).join('')}</div>`;
+}
+
+function cycWeighNote() { const ci = cycInfo(today()); return ci && (ci.ph === 'lut' || ci.ph === 'men') ? `<div class="call ac" style="margin-bottom:12px">${ic('cal', 18)}<div><b>${ci.pn[0].toUpperCase() + ci.pn.slice(1)} (dia ${ci.day}).</b> A balança pode estar 0,5–2 kg acima por retenção de líquidos. Compara com o mesmo dia do ciclo anterior.</div></div>` : ''; }
+
 /* ---------- arranque ---------- */
+applyTheme();
 buildDays();
 renderTabs();
 checkBadges(true);
