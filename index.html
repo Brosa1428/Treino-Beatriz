@@ -247,7 +247,8 @@ table.hist td{text-align:center;padding:8px 2px;border-top:1px solid var(--line)
 .wd.done i{background:var(--mint);color:var(--sf)}
 .wd.part i{background:var(--mintp);color:var(--mintd)}
 .wd.rest i{background:var(--lilp);color:var(--lild)}
-.wd.today{color:var(--ink)}.wd.today i{outline:2px solid var(--ink);outline-offset:1px}
+.wd.today{color:var(--acd)}.wd.today i{background:var(--ac2);color:var(--acd);box-shadow:inset 0 0 0 2px var(--ac)}
+.wd.today.done i{background:var(--mint);color:var(--sf);box-shadow:inset 0 0 0 2px var(--mintd)}.wd.today.part i{background:var(--mintp);color:var(--mintd);box-shadow:inset 0 0 0 2px var(--mint)}.wd.today.rest i{background:var(--lilp);color:var(--lild);box-shadow:inset 0 0 0 2px var(--lil)}
 .wd.fut i{opacity:.55}
 /* ---------- cargas e séries ---------- */
 .stepper{display:flex;align-items:center;gap:8px}
@@ -397,6 +398,59 @@ table.hist td{text-align:center;padding:8px 2px;border-top:1px solid var(--line)
  .ah{padding-top:34px}
  .bdg{grid-template-columns:repeat(5,1fr)}
 }
+/* ---------- v6: comer em 3 separadores, jejum ao estilo Zero ---------- */
+.sec .sr{text-transform:none;letter-spacing:0;font-weight:700;font-size:13px;color:var(--lild)}
+.chips.sub{margin-top:-2px}
+.fsum{display:flex;align-items:center;gap:12px;width:100%;text-align:left;color:var(--ink)}
+.fsum .tx{flex:1;min-width:0}.fsum small{display:block;font-size:12px;color:var(--ink2);font-weight:700}
+.fsum b{display:block;font-family:var(--fd);font-size:26px;font-weight:800;letter-spacing:-.02em;margin:2px 0 10px}.fsum b span{font-family:Jakarta,system-ui,sans-serif;font-size:13px;color:var(--ink2);font-weight:600;letter-spacing:0}
+.kc{font-size:15px;white-space:nowrap;font-weight:800}.kc small{font-size:11.5px;color:var(--ink2);font-weight:600}
+.row.tot{background:var(--sf2)}
+.fcard{padding:18px 16px 16px}
+.fring{display:flex;justify-content:center;margin:2px 0 16px}
+.fin{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;line-height:1.2;padding:0 26px}
+.fin small{font-size:12.5px;font-weight:700;color:var(--ink2)}
+.fin b{font-family:var(--fd);font-size:38px;font-weight:800;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--ink);margin:2px 0 3px;line-height:1.05}
+.fin em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--lild);background:var(--lil2);border-radius:99px;padding:4px 10px;margin-top:8px}
+.fin em.ok{color:var(--mintd);background:var(--mint2)}.fin em.pch{color:var(--pchd);background:var(--pch2)}
+.fcells{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fcell{border:0;background:var(--sf2);border-radius:16px;padding:10px 12px;text-align:left;color:var(--ink);min-width:0}
+.fcell small{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.fcell b{display:block;font-size:14px;margin-top:3px;line-height:1.25}
+button.fcell{background:var(--lil2);box-shadow:inset 0 0 0 1.5px var(--lilp)}button.fcell small{color:var(--lild)}
+.falt{text-align:center;margin-top:12px}.falt .link{font-size:13.5px}
+.fz{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:16px}
+.fz span{font-size:10.5px;font-weight:700;color:var(--mut);text-align:center;line-height:1.2}
+.fz span i{display:block;height:6px;border-radius:9px;background:var(--sf2);margin-bottom:6px}
+.fz span small{display:block;font-size:10px;font-weight:600;margin-top:1px;opacity:.8}
+.fz span.past i{background:var(--lilp)}.fz span.on{color:var(--lild)}.fz span.on i{background:var(--lil)}
+.fzt{text-align:center;margin:10px 0 0;color:var(--lild);font-weight:700}
+.fprog{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.fprog button{border:1px solid var(--line);background:var(--sf);border-radius:14px;padding:9px 4px;color:var(--ink)}
+.fprog b{display:block;font-size:14px}.fprog small{display:block;font-size:11px;color:var(--ink2);font-weight:600}
+.fprog button.on{background:var(--lil);border-color:var(--lil);color:var(--sf)}.fprog button.on small{color:inherit;opacity:.85}
+.fbars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.fb{text-align:center;min-width:0}
+.fb .v{display:block;height:17px;font-size:11px;font-weight:800;color:var(--ink2)}
+.fb .tr{position:relative;height:120px;background:var(--sf2);border-radius:10px;display:flex;align-items:flex-end;overflow:hidden}
+.fb .tr i{display:block;width:100%;background:var(--lilp);border-radius:8px 8px 0 0}
+.fb.ok .tr i{background:var(--mint)}
+.fb.live .tr i{background:repeating-linear-gradient(135deg,var(--lil) 0 5px,var(--lilp) 5px 10px)}
+.fb .gl{position:absolute;left:0;right:0;border-top:2px dashed var(--ink);opacity:.3}
+.fb small{display:block;font-size:11px;font-weight:700;color:var(--mut);margin-top:6px;line-height:1.15}
+.fb small b{display:block;font-size:12px;color:var(--ink2)}
+.fb.today small,.fb.today small b{color:var(--acd)}
+.kpi.fk{background:var(--amb2);border-color:transparent}.kpi.fk small,.kpi.fk .s,.kpi.fk .u{color:var(--ambd)}
+.fprev{min-height:20px;margin:12px 0 0;font-size:13.5px;color:var(--ink2)}
+.fprev.big{text-align:center;background:var(--lil2);border-radius:18px;padding:14px;margin:0 0 2px;color:var(--lild);min-height:76px}
+.fprev.big b{display:block;font-family:var(--fd);font-size:30px;font-weight:800;color:var(--ink);line-height:1.1}
+.fprev.big small{display:block;font-weight:700;font-size:13px;margin-top:4px}
+.fprev .bad{color:var(--bad);font-weight:700}
+.dtf{display:grid;grid-template-columns:1.2fr 1fr;gap:8px}
+.chips.qk{margin:2px -18px 0;padding:4px 18px 6px}
+.fmini{display:flex;align-items:center;gap:12px;cursor:pointer}
+.fmini .tx{flex:1;min-width:0}.fmini .tx b{display:block;font-size:14.5px;font-variant-numeric:tabular-nums}.fmini .tx small{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px}
+.fmini>div:first-child{color:var(--lild);flex:none}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.media .b{opacity:0}.hero-art .ecg{stroke-dashoffset:0}}
 </style>
 </head>
@@ -416,7 +470,7 @@ table.hist td{text-align:center;padding:8px 2px;border-top:1px solid var(--line)
 <div class="toast" id="toast"></div>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 <input type="file" id="photoFile" accept="image/*" hidden>
-<script src="data.js"></script>
-<script src="app.js"></script>
+<script src="data.19b146d091.js"></script>
+<script src="app.d8e9b04a52.js"></script>
 </body>
 </html>
