@@ -1569,7 +1569,7 @@ function renderHoje() {
 const SIDE = [['hoje', '', 'home', 'Hoje'], ['treino', '', 'dumb', 'Treino'], ['comer', '', 'food', 'Comer'], ['prog', '', 'chart', 'Progresso'], ['mais', 'aprender', 'book', 'Aprender'], ['mais', 'desafio', 'target', 'Desafio'], ['mais', 'conq', 'medal', 'Conquistas'], ['mais', 'menu', 'grid', 'Mais']];
 function renderSide() {
   const L = lvlOf(xpTotal()), el = $('side'); if (!el) return;
-  el.innerHTML = `<div class="brand"><img src="icons/avatar.jpg" alt=""><div><b>Push It</b><small>${S.perfil.nome ? esc(S.perfil.nome) : 'o teu treino'}</small></div></div>` +
+  el.innerHTML = `<div class="brand"><img src="icons/pi-192.png" alt=""><div><b>Push It</b><small>${S.perfil.nome ? esc(S.perfil.nome) : 'o teu treino'}</small></div></div>` +
     SIDE.map(([t2, sub, i, l]) => { const on = tab === t2 && (!sub || UI.mais === sub || (sub === 'menu' && !['aprender', 'desafio', 'conq'].includes(UI.mais))); return `<button class="slink ${on ? 'on' : ''}" data-act="side" data-tab="${t2}" data-sub="${sub}">${ic(i, 20)}${l}</button>`; }).join('') +
     `<div class="foot">${lvlChip()}<p class="note" style="margin:8px 0 0">${f0(L.xp)} XP${L.nx ? ' · faltam ' + f0(L.nx - L.xp) : ''}</p></div>`;
 }
