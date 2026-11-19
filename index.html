@@ -451,6 +451,42 @@ button.fcell{background:var(--lil2);box-shadow:inset 0 0 0 1.5px var(--lilp)}but
 .fmini{display:flex;align-items:center;gap:12px;cursor:pointer}
 .fmini .tx{flex:1;min-width:0}.fmini .tx b{display:block;font-size:14.5px;font-variant-numeric:tabular-nums}.fmini .tx small{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px}
 .fmini>div:first-child{color:var(--lild);flex:none}
+/* ---------- v7: banco de alimentos, refeições, metas e alertas ---------- */
+.call.bad{background:var(--bad2);color:var(--badd)}.call.mt{margin-top:10px}
+.alerts{display:grid;gap:8px;margin-bottom:12px}
+.dbar{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sf);border:1px solid var(--line);border-radius:16px;padding:6px;margin:0 0 12px}
+.dbar b{font-size:14.5px}.dbar .x{width:34px;height:34px}.dbar .x:disabled{opacity:.3}
+.rb{background:none;border:0;padding:0;text-align:left;color:inherit;cursor:pointer;flex:1;min-width:0;font:inherit}
+.rb b{display:block;font-size:14.5px;font-weight:700;line-height:1.25}.rb small{display:block;font-size:12.5px;color:var(--ink2);margin-top:2px}
+.fsearch{position:relative;margin-bottom:10px}.fsearch svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--mut);pointer-events:none}
+.fsearch .in{padding-left:40px}
+.chips.fcats{margin:0 -18px 2px;padding:2px 18px 10px}
+.fqa{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 2px}
+.fqa button{display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:14px;padding:11px 8px;font-weight:700;font-size:13.5px;background:var(--pch2);color:var(--pchd)}
+.fqa button+button{background:var(--lil2);color:var(--lild)}
+.frow small .pu{opacity:.7}
+.qtyrow{display:grid;grid-template-columns:1fr 1.5fr;gap:8px}
+.qtyrow input{font-weight:800;font-size:20px;text-align:center}
+.fbig{display:flex;gap:14px;align-items:center;background:var(--sf2);border-radius:18px;padding:14px;margin-top:4px}
+.kc1{text-align:center;min-width:76px}.kc1 b{display:block;font-family:var(--fd);font-size:34px;font-weight:800;line-height:1}.kc1 small{font-size:12px;font-weight:700;color:var(--ink2)}
+.fm{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+.fm span{font-size:11.5px;color:var(--ink2);font-weight:600}.fm b{display:block;font-size:15px;color:var(--ink)}
+details.fnut{margin-top:12px;border:1px solid var(--line);border-radius:16px;padding:10px 12px}
+details.fnut summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--acd)}
+.ntab{display:grid;gap:7px;margin-top:10px}
+.nrow{display:grid;grid-template-columns:minmax(92px,1.1fr) 1fr auto;grid-template-areas:"n b v" "n b s";column-gap:10px;align-items:center;font-size:12.5px}
+.nrow span{grid-area:n;font-weight:700}.nrow span i{font-style:normal;color:var(--amb);margin-left:2px}
+.nrow .bar{grid-area:b;height:7px}.nrow b{grid-area:v;text-align:right;font-size:12.5px}.nrow small{grid-area:s;text-align:right;font-size:10.5px;color:var(--ink2)}
+.rsrv{display:flex;align-items:center;gap:12px}.rsrv b{min-width:96px;text-align:center}
+.rtot{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+.rtot>div{background:var(--pch2);border-radius:16px;padding:10px 12px;color:var(--pchd)}
+.rtot small{display:block;font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.rtot b{display:block;font-family:var(--fd);font-size:22px;color:var(--ink)}.rtot span{font-size:12px;font-weight:600}
+.hco{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.hco button{border:1px solid var(--line);background:var(--sf);border-radius:12px;padding:8px 2px;color:var(--ink)}.hco b{display:block;font-size:12.5px}.hco small{display:block;font-size:10px;color:var(--ink2)}
+.hco button.on{background:var(--lil);border-color:var(--lil);color:var(--sf)}.hco button.on small{color:inherit;opacity:.85}
+.goalbtn{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;border:0;border-radius:16px;padding:10px 12px;background:var(--ac2);color:var(--ink);text-align:left}
+.goalbtn>span:first-child{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--sf);color:var(--acd);flex:none}
+.goalbtn div{flex:1;min-width:0}.goalbtn b{display:block;font-size:14px}.goalbtn small{display:block;font-size:12px;color:var(--ink2)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.media .b{opacity:0}.hero-art .ecg{stroke-dashoffset:0}}
 </style>
 </head>
@@ -470,7 +506,7 @@ button.fcell{background:var(--lil2);box-shadow:inset 0 0 0 1.5px var(--lilp)}but
 <div class="toast" id="toast"></div>
 <input type="file" id="importFile" accept="application/json,.json" hidden>
 <input type="file" id="photoFile" accept="image/*" hidden>
-<script src="data.19b146d091.js"></script>
-<script src="app.d8e9b04a52.js"></script>
+<script src="data.023225e4be.js"></script>
+<script src="app.d02f0f345f.js"></script>
 </body>
 </html>
